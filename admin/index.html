@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Snips Admin — AI Control Center</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #f5f5f3;
+      color: #171717;
+      font-family: Inter, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Arial, sans-serif;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* Sidebar */
+
+    .sidebar {
+      width: 230px;
+      background: #111;
+      color: white;
+      padding: 28px 18px;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      margin-bottom: 42px;
+      padding: 0 10px;
+    }
+
+    .logo span {
+      opacity: .45;
+      font-weight: 400;
+    }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nav-item {
+      padding: 11px 12px;
+      border-radius: 9px;
+      font-size: 14px;
+      color: #aaa;
+      cursor: pointer;
+    }
+
+    .nav-item.active,
+    .nav-item:hover {
+      background: #242424;
+      color: white;
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 12px;
+      font-size: 11px;
+      color: #666;
+    }
+
+    /* Main */
+
+    .main {
+      flex: 1;
+      min-width: 0;
+      padding: 36px 42px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 34px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 650;
+      letter-spacing: -0.04em;
+      margin: 0;
+    }
+
+    .page-subtitle {
+      margin-top: 6px;
+      color: #777;
+      font-size: 13px;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 999px;
+      font-size: 12px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #28a745;
+    }
+
+    /* Cards */
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 26px;
+    }
+
+    .metric {
+      background: white;
+      border: 1px solid #e7e7e5;
+      border-radius: 14px;
+      padding: 20px;
+    }
+
+    .metric-label {
+      color: #888;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .metric-value {
+      margin-top: 12px;
+      font-size: 24px;
+      font-weight: 650;
+      letter-spacing: -0.03em;
+    }
+
+    .metric-note {
+      margin-top: 6px;
+      color: #999;
+      font-size: 11px;
+    }
+
+    .section {
+      background: white;
+      border: 1px solid #e7e7e5;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .section-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid #ededeb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .section-description {
+      font-size: 11px;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    .section-body {
+      padding: 20px;
+    }
+
+    /* AI config */
+
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field label {
+      font-size: 11px;
+      color: #777;
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+      width: 100%;
+      border: 1px solid #dededb;
+      background: #fafaf9;
+      border-radius: 8px;
+      padding: 11px 12px;
+      font: inherit;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .field textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus {
+      border-color: #999;
+      background: white;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: #111;
+      color: white;
+    }
+
+    .secondary {
+      background: #f0f0ee;
+      color: #333;
+    }
+
+    /* Request */
+
+    .request {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .code-box {
+      background: #111;
+      color: #ddd;
+      border-radius: 10px;
+      padding: 16px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      line-height: 1.7;
+      min-height: 190px;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+
+    .empty {
+      color: #888;
+      font-size: 12px;
+      padding: 25px 0;
+      text-align: center;
+    }
+
+    /* Mobile */
+
+    @media (max-width: 850px) {
+      .sidebar {
+        width: 70px;
+        padding: 22px 10px;
+      }
+
+      .logo {
+        font-size: 0;
+        text-align: center;
+      }
+
+      .logo::after {
+        content: "S";
+        font-size: 20px;
+      }
+
+      .nav-item {
+        text-align: center;
+        font-size: 0;
+      }
+
+      .nav-item::first-letter {
+        font-size: 18px;
+      }
+
+      .sidebar-bottom {
+        display: none;
+      }
+
+      .main {
+        padding: 24px 18px;
+      }
+
+      .metrics {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .config-grid,
+      .request {
+        grid-template-columns: 1fr;
+      }
+
+      .full {
+        grid-column: auto;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        gap: 15px;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+
+  <aside class="sidebar">
+
+    <div class="logo">
+      snips <span>admin</span>
+    </div>
+
+    <nav class="nav">
+
+      <div class="nav-item active">
+        Overview
+      </div>
+
+      <div class="nav-item">
+        AI Playground
+      </div>
+
+      <div class="nav-item">
+        Prompts
+      </div>
+
+      <div class="nav-item">
+        Model
+      </div>
+
+      <div class="nav-item">
+        Request Logs
+      </div>
+
+    </nav>
+
+    <div class="sidebar-bottom">
+      Snips AI Control Center<br>
+      v0.1
+    </div>
+
+  </aside>
+
+
+  <!-- Main -->
+
+  <main class="main">
+
+    <div class="topbar">
+
+      <div>
+        <h1 class="page-title">
+          AI Control Center
+        </h1>
+
+        <div class="page-subtitle">
+          Monitor and test the intelligence behind Snips.
+        </div>
+      </div>
+
+      <div class="status">
+        <span class="status-dot"></span>
+        AI Connected
+      </div>
+
+    </div>
+
+
+    <!-- Metrics -->
+
+    <section class="metrics">
+
+      <div class="metric">
+
+        <div class="metric-label">
+          AI Status
+        </div>
+
+        <div class="metric-value">
+          Connected
+        </div>
+
+        <div class="metric-note">
+          OpenAI API
+        </div>
+
+      </div>
+
+
+      <div class="metric">
+
+        <div class="metric-label">
+          Model
+        </div>
+
+        <div class="metric-value">
+          GPT-5.6 Luna
+        </div>
+
+        <div class="metric-note">
+          Vision capable
+        </div>
+
+      </div>
+
+
+      <div class="metric">
+
+        <div class="metric-label">
+          Last Request
+        </div>
+
+        <div class="metric-value">
+          —
+        </div>
+
+        <div class="metric-note">
+          No request yet
+        </div>
+
+      </div>
+
+
+      <div class="metric">
+
+        <div class="metric-label">
+          Requests
+        </div>
+
+        <div class="metric-value">
+          0
+        </div>
+
+        <div class="metric-note">
+          This session
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- AI Configuration -->
+
+    <section class="section">
+
+      <div class="section-header">
+
+        <div>
+          <div class="section-title">
+            AI Configuration
+          </div>
+
+          <div class="section-description">
+            Current configuration used by Snips.
+          </div>
+        </div>
+
+      </div>
+
+
+      <div class="section-body">
+
+        <div class="config-grid">
+
+          <div class="field">
+
+            <label>
+              Model
+            </label>
+
+            <select id="model">
+
+              <option value="gpt-5.6-luna">
+                GPT-5.6 Luna
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="field">
+
+            <label>
+              AI Mode
+            </label>
+
+            <select id="mode">
+
+              <option>
+                Vision + Text
+              </option>
+
+              <option>
+                Text Only
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="field">
+
+            <label>
+              Max Snips
+            </label>
+
+            <input
+              id="maxSnips"
+              type="number"
+              value="5"
+              min="1"
+              max="10"
+            />
+
+          </div>
+
+
+          <div class="field">
+
+            <label>
+              Cover Directions
+            </label>
+
+            <input
+              id="directionCount"
+              type="number"
+              value="3"
+              min="1"
+              max="5"
+            />
+
+          </div>
+
+
+          <div class="field full">
+
+            <label>
+              System Prompt
+            </label>
+
+            <textarea id="systemPrompt">You are Snips.
+
+You are an AI creative director for video covers.
+
+Analyze the provided visual content and identify the strongest visual moments that could become clickable cover images.
+
+Focus on:
+
+1. Visual hierarchy
+2. Subject emphasis
+3. Emotion
+4. Curiosity
+5. Composition
+6. Clickability
+
+Do not invent visual information that does not exist in the provided image.</textarea>
+
+          </div>
+
+        </div>
+
+
+        <div class="button-row">
+
+          <button
+            class="primary"
+            onclick="saveConfig()"
+          >
+            Save Configuration
+          </button>
+
+          <button
+            class="secondary"
+            onclick="resetConfig()"
+          >
+            Reset
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- Last Request -->
+
+    <section class="section">
+
+      <div class="section-header">
+
+        <div>
+          <div class="section-title">
+            Last AI Request
+          </div>
+
+          <div class="section-description">
+            The actual request sent to the AI.
+          </div>
+        </div>
+
+      </div>
+
+
+      <div class="section-body">
+
+        <div class="request">
+
+          <div>
+
+            <div
+              class="code-box"
+              id="requestBox"
+            >
+No AI request yet.
+
+Run an AI test from AI Playground.
+            </div>
+
+          </div>
+
+
+          <div>
+
+            <div
+              class="code-box"
+              id="responseBox"
+            >
+No AI response yet.
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- Architecture -->
+
+    <section class="section">
+
+      <div class="section-header">
+
+        <div>
+          <div class="section-title">
+            AI Pipeline
+          </div>
+
+          <div class="section-description">
+            How Snips processes a visual request.
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="section-body">
+
+        <div class="empty">
+
+          Upload Image
+          →
+          Vision AI
+          →
+          Visual Analysis
+          →
+          Snips
+          →
+          Cover Directions
+          →
+          Final Cover
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+
+
+<script>
+
+  function saveConfig() {
+
+    const config = {
+
+      model:
+        document.getElementById("model").value,
+
+      mode:
+        document.getElementById("mode").value,
+
+      maxSnips:
+        document.getElementById("maxSnips").value,
+
+      directionCount:
+        document.getElementById("directionCount").value,
+
+      systemPrompt:
+        document.getElementById("systemPrompt").value
+
+    };
+
+    localStorage.setItem(
+      "snips_ai_config",
+      JSON.stringify(config)
+    );
+
+    alert("AI configuration saved.");
+
+  }
+
+
+  function resetConfig() {
+
+    localStorage.removeItem(
+      "snips_ai_config"
+    );
+
+    location.reload();
+
+  }
+
+
+  function loadConfig() {
+
+    const saved =
+      localStorage.getItem(
+        "snips_ai_config"
+      );
+
+    if (!saved) return;
+
+    try {
+
+      const config =
+        JSON.parse(saved);
+
+      if (config.model)
+        document.getElementById("model").value =
+          config.model;
+
+      if (config.mode)
+        document.getElementById("mode").value =
+          config.mode;
+
+      if (config.maxSnips)
+        document.getElementById("maxSnips").value =
+          config.maxSnips;
+
+      if (config.directionCount)
+        document.getElementById("directionCount").value =
+          config.directionCount;
+
+      if (config.systemPrompt)
+        document.getElementById("systemPrompt").value =
+          config.systemPrompt;
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+
+  }
+
+
+  loadConfig();
+
+</script>
+
+</body>
+</html>
