@@ -1,0 +1,2510 @@
+ <!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Snips — AI Cover Studio</title>
+
+<style>
+:root{
+  --bg:#f6f6f3;
+  --paper:#ffffff;
+  --ink:#171717;
+  --muted:#898983;
+  --soft:#eeeeea;
+  --line:#e4e4de;
+  --dark:#171717;
+  --radius:24px;
+  --small-radius:16px;
+  --shadow:0 12px 40px rgba(0,0,0,.055);
+}
+
+*{
+  box-sizing:border-box;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Display",
+    "SF Pro Text",
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+
+button,
+input,
+textarea{
+  font:inherit;
+}
+
+button{
+  border:0;
+  cursor:pointer;
+}
+
+.app{
+  min-height:100vh;
+}
+
+/* ---------------- Header ---------------- */
+
+.header{
+  height:72px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 32px;
+  max-width:1380px;
+  margin:auto;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:750;
+  letter-spacing:-.04em;
+  font-size:19px;
+}
+
+.brand-mark{
+  width:25px;
+  height:25px;
+  border:2px solid var(--ink);
+  border-radius:9px 9px 9px 3px;
+  transform:rotate(-8deg);
+  position:relative;
+}
+
+.brand-mark:after{
+  content:"";
+  position:absolute;
+  width:7px;
+  height:7px;
+  background:var(--ink);
+  border-radius:50%;
+  right:4px;
+  top:4px;
+}
+
+.header-right{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.lang{
+  background:transparent;
+  color:var(--muted);
+  padding:8px 10px;
+  font-size:12px;
+}
+
+.lang.active{
+  color:var(--ink);
+  font-weight:650;
+}
+
+.lang-wrap{
+  display:flex;
+  align-items:center;
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:2px;
+}
+
+.avatar{
+  width:31px;
+  height:31px;
+  border-radius:50%;
+  background:#ddd;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  font-weight:700;
+}
+
+/* ---------------- Hero ---------------- */
+
+.hero{
+  max-width:980px;
+  margin:0 auto;
+  padding:76px 24px 46px;
+  text-align:center;
+}
+
+.eyebrow{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:22px;
+}
+
+.hero h1{
+  font-size:clamp(46px,8vw,86px);
+  line-height:.94;
+  letter-spacing:-.065em;
+  margin:0;
+  font-weight:780;
+}
+
+.hero h1 span{
+  display:block;
+  color:#8b8b85;
+}
+
+.hero-sub{
+  max-width:560px;
+  margin:27px auto 0;
+  color:var(--muted);
+  font-size:16px;
+  line-height:1.65;
+}
+
+/* ---------------- Workspace ---------------- */
+
+.workspace{
+  width:min(1040px,calc(100% - 32px));
+  margin:0 auto;
+}
+
+.input-card{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:30px;
+  padding:10px;
+  box-shadow:var(--shadow);
+}
+
+.dropzone{
+  min-height:330px;
+  border:1.5px dashed #cfcfc8;
+  border-radius:23px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:40px 24px;
+  transition:.2s;
+  position:relative;
+  overflow:hidden;
+}
+
+.dropzone.dragging{
+  border-color:var(--ink);
+  background:#fafaf8;
+}
+
+.upload-icon{
+  width:58px;
+  height:58px;
+  border-radius:19px;
+  background:var(--soft);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:21px;
+}
+
+.upload-icon svg{
+  width:24px;
+  height:24px;
+}
+
+.drop-title{
+  font-size:20px;
+  font-weight:720;
+  letter-spacing:-.035em;
+}
+
+.drop-sub{
+  color:var(--muted);
+  font-size:13px;
+  margin-top:8px;
+}
+
+.drop-actions{
+  display:flex;
+  gap:9px;
+  margin-top:25px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.primary-btn,
+.secondary-btn{
+  min-height:44px;
+  padding:0 19px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:650;
+  transition:.18s;
+}
+
+.primary-btn{
+  background:var(--dark);
+  color:white;
+}
+
+.primary-btn:hover{
+  transform:translateY(-1px);
+}
+
+.secondary-btn{
+  background:var(--soft);
+  color:var(--ink);
+}
+
+.hidden-input{
+  display:none;
+}
+
+.url-row{
+  display:none;
+  margin-top:10px;
+  padding:8px;
+  border-radius:18px;
+  background:var(--soft);
+  gap:8px;
+}
+
+.url-row.show{
+  display:flex;
+}
+
+.url-row input{
+  flex:1;
+  min-width:0;
+  border:0;
+  outline:0;
+  background:transparent;
+  padding:0 11px;
+  color:var(--ink);
+  font-size:13px;
+}
+
+.url-go{
+  width:42px;
+  height:42px;
+  border-radius:13px;
+  background:var(--dark);
+  color:white;
+}
+
+/* ---------------- Intent ---------------- */
+
+.intent{
+  margin-top:12px;
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:22px;
+}
+
+.intent-label{
+  font-size:12px;
+  font-weight:700;
+  color:var(--muted);
+  margin-bottom:11px;
+}
+
+.intent textarea{
+  width:100%;
+  min-height:72px;
+  resize:none;
+  border:0;
+  outline:0;
+  background:transparent;
+  font-size:18px;
+  line-height:1.5;
+  letter-spacing:-.02em;
+}
+
+.intent textarea::placeholder{
+  color:#b1b1aa;
+}
+
+.intent-footer{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:5px;
+}
+
+.suggestion-row{
+  display:flex;
+  gap:6px;
+  overflow:auto;
+  scrollbar-width:none;
+}
+
+.suggestion{
+  flex:0 0 auto;
+  border:1px solid var(--line);
+  background:var(--paper);
+  border-radius:999px;
+  padding:7px 11px;
+  font-size:11px;
+  color:var(--muted);
+}
+
+.find-btn{
+  min-height:46px;
+  padding:0 20px;
+  border-radius:15px;
+  background:var(--dark);
+  color:white;
+  font-weight:700;
+  font-size:13px;
+  white-space:nowrap;
+}
+
+/* ---------------- AI Loading ---------------- */
+
+.loading-screen{
+  display:none;
+  text-align:center;
+  padding:110px 20px 100px;
+}
+
+.loading-screen.show{
+  display:block;
+}
+
+.loader{
+  width:54px;
+  height:54px;
+  margin:0 auto 28px;
+  border:2px solid var(--line);
+  border-top-color:var(--ink);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
+
+.loading-title{
+  font-size:28px;
+  font-weight:730;
+  letter-spacing:-.04em;
+}
+
+.loading-copy{
+  color:var(--muted);
+  margin-top:9px;
+  font-size:13px;
+}
+
+.loading-steps{
+  width:min(330px,100%);
+  margin:35px auto 0;
+  text-align:left;
+}
+
+.loading-step{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 0;
+  border-bottom:1px solid var(--line);
+  font-size:12px;
+  color:#aaa;
+}
+
+.loading-step.active{
+  color:var(--ink);
+}
+
+.step-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#d4d4cf;
+}
+
+.loading-step.active .step-dot{
+  background:var(--ink);
+}
+
+/* ---------------- Result ---------------- */
+
+.results{
+  display:none;
+  padding:64px 0 100px;
+}
+
+.results.show{
+  display:block;
+}
+
+.section-kicker{
+  color:var(--muted);
+  text-transform:uppercase;
+  font-size:10px;
+  font-weight:750;
+  letter-spacing:.16em;
+}
+
+.section-title{
+  font-size:34px;
+  line-height:1.05;
+  letter-spacing:-.05em;
+  margin:10px 0 0;
+}
+
+.section-desc{
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.6;
+  margin-top:9px;
+}
+
+/* ---------------- Snips ---------------- */
+
+.snips-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  gap:20px;
+  margin-bottom:20px;
+}
+
+.snips-count{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.snips-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+
+.snip{
+  position:relative;
+  aspect-ratio:16/10;
+  overflow:hidden;
+  border-radius:18px;
+  background:#ddd;
+  cursor:pointer;
+}
+
+.snip:first-child{
+  grid-column:span 2;
+  grid-row:span 2;
+  aspect-ratio:auto;
+}
+
+.snip img,
+.snip .mock-image{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.mock-image{
+  position:relative;
+  overflow:hidden;
+  background:
+    linear-gradient(135deg,#deded8,#8c8c85 45%,#2b2b2b);
+}
+
+.mock-image.two{
+  background:
+    linear-gradient(125deg,#242424 0 35%,#cfcfc9 35% 67%,#76766f 67%);
+}
+
+.mock-image.three{
+  background:
+    radial-gradient(circle at 70% 35%,#f1f1ed 0 12%,transparent 13%),
+    linear-gradient(145deg,#a5a59f,#30302e);
+}
+
+.mock-image.four{
+  background:
+    linear-gradient(110deg,#eeeeea 0 30%,#4a4a46 31% 58%,#a5a59f 59%);
+}
+
+.mock-image.five{
+  background:
+    radial-gradient(circle at 38% 50%,#eeeeea 0 17%,transparent 18%),
+    linear-gradient(135deg,#555550,#181818);
+}
+
+.mock-subject{
+  position:absolute;
+  width:31%;
+  height:42%;
+  left:36%;
+  top:30%;
+  border-radius:18px;
+  background:rgba(255,255,255,.76);
+  transform:rotate(-7deg);
+  box-shadow:0 15px 35px rgba(0,0,0,.16);
+}
+
+.mock-image.two .mock-subject{
+  width:45%;
+  height:55%;
+  left:29%;
+  top:22%;
+  background:#292925;
+}
+
+.mock-image.three .mock-subject{
+  width:26%;
+  height:51%;
+  left:23%;
+  top:24%;
+}
+
+.mock-image.four .mock-subject{
+  width:48%;
+  height:29%;
+  left:27%;
+  top:36%;
+  transform:rotate(8deg);
+}
+
+.mock-image.five .mock-subject{
+  width:29%;
+  height:52%;
+  left:50%;
+  top:24%;
+  background:#e7e7e1;
+}
+
+.snip-info{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  padding:18px 15px 14px;
+  color:white;
+  background:linear-gradient(transparent,rgba(0,0,0,.7));
+}
+
+.snip-number{
+  font-size:10px;
+  opacity:.7;
+  letter-spacing:.1em;
+}
+
+.snip-label{
+  font-size:12px;
+  font-weight:650;
+  margin-top:4px;
+}
+
+/* ---------------- Direction ---------------- */
+
+.direction-section{
+  margin-top:82px;
+}
+
+.direction-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin-top:24px;
+}
+
+.direction{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:9px;
+  transition:.2s;
+}
+
+.direction:hover{
+  transform:translateY(-3px);
+  box-shadow:var(--shadow);
+}
+
+.direction-preview{
+  aspect-ratio:4/5;
+  border-radius:17px;
+  overflow:hidden;
+  position:relative;
+}
+
+.direction-preview .mock-image{
+  width:100%;
+  height:100%;
+}
+
+.direction-preview .mock-subject{
+  width:50%;
+  height:42%;
+  left:25%;
+  top:28%;
+}
+
+.direction:nth-child(2) .mock-image{
+  background:
+    linear-gradient(145deg,#eeeeea 0 37%,#353532 38% 69%,#a1a19a 70%);
+}
+
+.direction:nth-child(2) .mock-subject{
+  width:73%;
+  height:60%;
+  left:14%;
+  top:20%;
+  background:#171717;
+  transform:rotate(-5deg);
+}
+
+.direction:nth-child(3) .mock-image{
+  background:
+    linear-gradient(160deg,#222220 0 30%,#777771 31% 63%,#e6e6e1 64%);
+}
+
+.direction:nth-child(3) .mock-subject{
+  width:31%;
+  height:62%;
+  left:55%;
+  top:20%;
+  background:#efefea;
+}
+
+.direction-meta{
+  padding:18px 10px 13px;
+}
+
+.direction-type{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.13em;
+  font-weight:750;
+  color:var(--muted);
+}
+
+.direction-name{
+  font-size:20px;
+  font-weight:740;
+  letter-spacing:-.04em;
+  margin-top:7px;
+}
+
+.direction-cn{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:3px;
+}
+
+.why{
+  border-top:1px solid var(--line);
+  margin-top:15px;
+  padding-top:13px;
+}
+
+.why-label{
+  font-size:10px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  font-weight:700;
+}
+
+.why-text{
+  font-size:12px;
+  line-height:1.55;
+  margin-top:5px;
+  color:#555550;
+}
+
+.reveal-btn{
+  width:100%;
+  margin-top:14px;
+  height:44px;
+  border-radius:13px;
+  background:var(--dark);
+  color:white;
+  font-size:12px;
+  font-weight:700;
+}
+
+/* ---------------- Reveal Modal ---------------- */
+
+.reveal-layer{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  background:rgba(20,20,19,.76);
+  backdrop-filter:blur(16px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.reveal-layer.show{
+  display:flex;
+}
+
+.reveal-box{
+  width:min(520px,100%);
+  max-height:90vh;
+  overflow:auto;
+  background:var(--paper);
+  border-radius:30px;
+  padding:10px;
+  animation:pop .25s ease;
+}
+
+@keyframes pop{
+  from{
+    opacity:0;
+    transform:scale(.97) translateY(10px);
+  }
+  to{
+    opacity:1;
+    transform:scale(1) translateY(0);
+  }
+}
+
+.reveal-visual{
+  aspect-ratio:4/5;
+  border-radius:23px;
+  overflow:hidden;
+  position:relative;
+}
+
+.reveal-visual .mock-image{
+  width:100%;
+  height:100%;
+}
+
+.reveal-title-overlay{
+  position:absolute;
+  left:25px;
+  right:25px;
+  bottom:25px;
+  color:white;
+  font-size:32px;
+  line-height:.98;
+  font-weight:800;
+  letter-spacing:-.06em;
+  text-align:center;
+  text-shadow:0 3px 20px rgba(0,0,0,.35);
+}
+
+.reveal-content{
+  padding:21px 13px 13px;
+}
+
+.reveal-tag{
+  font-size:10px;
+  color:var(--muted);
+  font-weight:750;
+  text-transform:uppercase;
+  letter-spacing:.13em;
+}
+
+.reveal-name{
+  font-size:27px;
+  font-weight:770;
+  letter-spacing:-.05em;
+  margin-top:7px;
+}
+
+.reveal-reason{
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.6;
+  margin-top:7px;
+}
+
+.reveal-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:18px;
+}
+
+.reveal-actions button{
+  height:47px;
+  border-radius:14px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.keep{
+  background:var(--dark);
+  color:white;
+}
+
+.refine{
+  background:var(--soft);
+  color:var(--ink);
+}
+
+.try-another{
+  grid-column:span 2;
+  background:transparent;
+  color:var(--muted);
+}
+
+.close-reveal{
+  position:absolute;
+  right:22px;
+  top:22px;
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  background:rgba(255,255,255,.13);
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:2;
+}
+
+/* ---------------- Final Studio ---------------- */
+
+.cover-studio{
+  display:none;
+  margin-top:90px;
+}
+
+.cover-studio.show{
+  display:block;
+}
+
+.studio-head{
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:20px;
+  margin-bottom:22px;
+}
+
+.studio-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1.15fr) minmax(260px,.65fr);
+  gap:12px;
+}
+
+.cover-canvas{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:28px;
+  padding:10px;
+}
+
+.cover-final{
+  aspect-ratio:16/10;
+  border-radius:21px;
+  overflow:hidden;
+  position:relative;
+  background:
+    linear-gradient(140deg,#deded8,#373733 48%,#a4a49d);
+}
+
+.cover-final .mock-subject{
+  width:31%;
+  height:60%;
+  left:34%;
+  top:20%;
+}
+
+.cover-text{
+  position:absolute;
+  left:26px;
+  top:23px;
+  max-width:62%;
+  color:white;
+  font-size:clamp(25px,4vw,50px);
+  line-height:.92;
+  letter-spacing:-.06em;
+  font-weight:800;
+  text-shadow:0 3px 20px rgba(0,0,0,.28);
+}
+
+.cover-text small{
+  display:block;
+  font-size:10px;
+  letter-spacing:.12em;
+  margin-top:13px;
+  opacity:.75;
+}
+
+.controls{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:28px;
+  padding:23px;
+}
+
+.control-group{
+  padding:0 0 19px;
+  margin-bottom:19px;
+  border-bottom:1px solid var(--line);
+}
+
+.control-group:last-child{
+  border:0;
+  margin:0;
+  padding:0;
+}
+
+.control-label{
+  font-size:10px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  font-weight:750;
+  margin-bottom:9px;
+}
+
+.control-input{
+  width:100%;
+  border:1px solid var(--line);
+  background:var(--bg);
+  border-radius:12px;
+  height:42px;
+  padding:0 12px;
+  outline:0;
+  font-size:13px;
+}
+
+.range{
+  width:100%;
+  accent-color:var(--ink);
+}
+
+.control-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.control-actions button{
+  height:42px;
+  border-radius:12px;
+  font-size:11px;
+  font-weight:700;
+}
+
+.export{
+  background:var(--dark);
+  color:white;
+}
+
+.restart{
+  background:var(--soft);
+}
+
+/* ---------------- Footer ---------------- */
+
+.footer{
+  max-width:1040px;
+  margin:80px auto 0;
+  padding:28px 0 45px;
+  border-top:1px solid var(--line);
+  display:flex;
+  justify-content:space-between;
+  color:var(--muted);
+  font-size:10px;
+}
+
+/* ---------------- Toast ---------------- */
+
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:28px;
+  transform:translate(-50%,20px);
+  background:var(--dark);
+  color:white;
+  padding:12px 17px;
+  border-radius:999px;
+  font-size:11px;
+  opacity:0;
+  pointer-events:none;
+  transition:.25s;
+  z-index:200;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translate(-50%,0);
+}
+
+/* ---------------- Responsive ---------------- */
+
+@media(max-width:760px){
+
+  .header{
+    height:62px;
+    padding:0 17px;
+  }
+
+  .hero{
+    padding:58px 20px 35px;
+  }
+
+  .hero h1{
+    font-size:54px;
+  }
+
+  .hero-sub{
+    font-size:14px;
+    max-width:330px;
+  }
+
+  .workspace{
+    width:calc(100% - 20px);
+  }
+
+  .dropzone{
+    min-height:275px;
+    padding:30px 18px;
+  }
+
+  .drop-title{
+    font-size:18px;
+  }
+
+  .intent{
+    padding:18px;
+  }
+
+  .intent textarea{
+    font-size:16px;
+    min-height:78px;
+  }
+
+  .intent-footer{
+    display:block;
+  }
+
+  .suggestion-row{
+    margin-bottom:11px;
+  }
+
+  .find-btn{
+    width:100%;
+  }
+
+  .results{
+    padding-top:48px;
+  }
+
+  .snips-head{
+    display:block;
+  }
+
+  .snips-count{
+    margin-top:7px;
+  }
+
+  .snips-grid{
+    grid-template-columns:repeat(2,1fr);
+    gap:7px;
+  }
+
+  .snip{
+    border-radius:13px;
+  }
+
+  .snip:first-child{
+    grid-column:span 2;
+    grid-row:auto;
+    aspect-ratio:16/10;
+  }
+
+  .snip-info{
+    padding:13px 11px 10px;
+  }
+
+  .snip-label{
+    font-size:10px;
+  }
+
+  .direction-section{
+    margin-top:60px;
+  }
+
+  .section-title{
+    font-size:28px;
+  }
+
+  .direction-grid{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+
+  .direction{
+    display:grid;
+    grid-template-columns:43% 57%;
+    padding:7px;
+  }
+
+  .direction-preview{
+    aspect-ratio:4/5;
+  }
+
+  .direction-meta{
+    padding:16px 13px 12px;
+  }
+
+  .direction-name{
+    font-size:18px;
+  }
+
+  .why{
+    margin-top:12px;
+    padding-top:10px;
+  }
+
+  .reveal-box{
+    border-radius:24px;
+  }
+
+  .studio-grid{
+    grid-template-columns:1fr;
+  }
+
+  .studio-head{
+    display:block;
+  }
+
+  .cover-studio{
+    margin-top:60px;
+  }
+
+  .footer{
+    margin:55px 10px 0;
+  }
+}
+
+@media(max-width:430px){
+
+  .brand{
+    font-size:17px;
+  }
+
+  .avatar{
+    display:none;
+  }
+
+  .hero h1{
+    font-size:48px;
+  }
+
+  .upload-icon{
+    width:50px;
+    height:50px;
+  }
+
+  .drop-actions{
+    width:100%;
+  }
+
+  .drop-actions button{
+    flex:1;
+  }
+
+  .direction{
+    grid-template-columns:39% 61%;
+  }
+
+  .direction-name{
+    font-size:16px;
+  }
+
+  .why-text{
+    font-size:11px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <span>snips</span>
+    </div>
+
+    <div class="header-right">
+      <div class="lang-wrap">
+        <button class="lang active" id="zhBtn" onclick="setLang('zh')">中</button>
+        <button class="lang" id="enBtn" onclick="setLang('en')">EN</button>
+      </div>
+      <div class="avatar">S</div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="eyebrow" data-i18n="eyebrow">AI COVER STUDIO</div>
+
+    <h1>
+      <span data-i18n="hero1">Make the frame</span>
+      <span data-i18n="hero2">worth clicking.</span>
+    </h1>
+
+    <p class="hero-sub" data-i18n="heroSub">
+      Snips finds the moments and visual directions most likely to make your cover work.
+    </p>
+  </section>
+
+
+  <main class="workspace">
+
+    <!-- INPUT -->
+    <section class="input-area" id="inputArea">
+
+      <div class="input-card">
+
+        <div class="dropzone" id="dropzone">
+
+          <div class="upload-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M12 16V4"/>
+              <path d="m7 9 5-5 5 5"/>
+              <path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>
+            </svg>
+          </div>
+
+          <div class="drop-title" data-i18n="dropTitle">
+            Drop your video here
+          </div>
+
+          <div class="drop-sub" data-i18n="dropSub">
+            or use an image / multiple images
+          </div>
+
+          <div class="drop-actions">
+            <button class="primary-btn" onclick="videoInput.click()" data-i18n="uploadVideo">
+              Upload video
+            </button>
+
+            <button class="secondary-btn" onclick="imageInput.click()" data-i18n="uploadImage">
+              Add images
+            </button>
+
+            <button class="secondary-btn" onclick="toggleUrl()" data-i18n="pasteLink">
+              Paste link
+            </button>
+          </div>
+
+          <input
+            type="file"
+            id="videoInput"
+            class="hidden-input"
+            accept="video/*"
+          >
+
+          <input
+            type="file"
+            id="imageInput"
+            class="hidden-input"
+            accept="image/*"
+            multiple
+          >
+
+        </div>
+
+        <div class="url-row" id="urlRow">
+          <input
+            id="urlInput"
+            type="url"
+            placeholder="Paste video link..."
+          >
+          <button class="url-go" onclick="acceptUrl()">→</button>
+        </div>
+
+      </div>
+
+
+      <!-- INTENT -->
+      <div class="intent">
+
+        <div class="intent-label" data-i18n="intentLabel">
+          What should it feel like?
+        </div>
+
+        <textarea
+          id="intentInput"
+          data-i18n-placeholder="intentPlaceholder"
+          placeholder="例如：高级一点，但要让人忍不住想点进去"
+        ></textarea>
+
+        <div class="intent-footer">
+
+          <div class="suggestion-row">
+
+            <button class="suggestion" onclick="useSuggestion(this)"
+              data-zh="高级、克制"
+              data-en="Premium, minimal">
+              高级、克制
+            </button>
+
+            <button class="suggestion" onclick="useSuggestion(this)"
+              data-zh="强烈、抓眼"
+              data-en="Bold, dramatic">
+              强烈、抓眼
+            </button>
+
+            <button class="suggestion" onclick="useSuggestion(this)"
+              data-zh="神秘、想点开"
+              data-en="Curious, intriguing">
+              神秘、想点开
+            </button>
+
+            <button class="suggestion" onclick="useSuggestion(this)"
+              data-zh="情绪冲击"
+              data-en="Emotional">
+              情绪冲击
+            </button>
+
+          </div>
+
+          <button class="find-btn" onclick="startAnalysis()">
+            <span data-i18n="findCover">Find the cover →</span>
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- LOADING -->
+    <section class="loading-screen" id="loadingScreen">
+
+      <div class="loader"></div>
+
+      <div class="loading-title" data-i18n="loadingTitle">
+        Looking at your content.
+      </div>
+
+      <div class="loading-copy" data-i18n="loadingCopy">
+        Finding the moments worth clicking.
+      </div>
+
+      <div class="loading-steps">
+
+        <div class="loading-step" id="step1">
+          <span class="step-dot"></span>
+          <span data-i18n="load1">Understanding the content</span>
+        </div>
+
+        <div class="loading-step" id="step2">
+          <span class="step-dot"></span>
+          <span data-i18n="load2">Finding your Snips</span>
+        </div>
+
+        <div class="loading-step" id="step3">
+          <span class="step-dot"></span>
+          <span data-i18n="load3">Reading high-performing patterns</span>
+        </div>
+
+        <div class="loading-step" id="step4">
+          <span class="step-dot"></span>
+          <span data-i18n="load4">Building three directions</span>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- RESULTS -->
+    <section class="results" id="results">
+
+      <!-- SNIPS -->
+      <section class="snips-section">
+
+        <div class="snips-head">
+
+          <div>
+            <div class="section-kicker" data-i18n="snipsKicker">
+              Your Snips
+            </div>
+
+            <h2 class="section-title" data-i18n="snipsTitle">
+              Moments worth a cover.
+            </h2>
+
+            <p class="section-desc" data-i18n="snipsDesc">
+              We found the moments with the strongest visual potential.
+            </p>
+          </div>
+
+          <div class="snips-count">
+            <span id="snipCount">5</span>
+            <span data-i18n="snipsFound">Snips found</span>
+          </div>
+
+        </div>
+
+
+        <div class="snips-grid">
+
+          <div class="snip">
+            <div class="mock-image">
+              <div class="mock-subject"></div>
+            </div>
+
+            <div class="snip-info">
+              <div class="snip-number">SNIP 01</div>
+              <div class="snip-label" data-i18n="snip1">Peak emotion</div>
+            </div>
+          </div>
+
+          <div class="snip">
+            <div class="mock-image two">
+              <div class="mock-subject"></div>
+            </div>
+
+            <div class="snip-info">
+              <div class="snip-number">SNIP 02</div>
+              <div class="snip-label" data-i18n="snip2">Strong subject</div>
+            </div>
+          </div>
+
+          <div class="snip">
+            <div class="mock-image three">
+              <div class="mock-subject"></div>
+            </div>
+
+            <div class="snip-info">
+              <div class="snip-number">SNIP 03</div>
+              <div class="snip-label" data-i18n="snip3">Curiosity</div>
+            </div>
+          </div>
+
+          <div class="snip">
+            <div class="mock-image four">
+              <div class="mock-subject"></div>
+            </div>
+
+            <div class="snip-info">
+              <div class="snip-number">SNIP 04</div>
+              <div class="snip-label" data-i18n="snip4">Clean composition</div>
+            </div>
+          </div>
+
+          <div class="snip">
+            <div class="mock-image five">
+              <div class="mock-subject"></div>
+            </div>
+
+            <div class="snip-info">
+              <div class="snip-number">SNIP 05</div>
+              <div class="snip-label" data-i18n="snip5">Visual tension</div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- DIRECTIONS -->
+      <section class="direction-section">
+
+        <div class="section-kicker" data-i18n="directionKicker">
+          Three directions
+        </div>
+
+        <h2 class="section-title" data-i18n="directionTitle">
+          Different ways to make it click.
+        </h2>
+
+        <p class="section-desc" data-i18n="directionDesc">
+          Not three versions. Three different ideas.
+        </p>
+
+
+        <div class="direction-grid">
+
+          <!-- Direction 1 -->
+          <article class="direction">
+
+            <div class="direction-preview">
+              <div class="mock-image">
+                <div class="mock-subject"></div>
+              </div>
+            </div>
+
+            <div class="direction-meta">
+
+              <div class="direction-type">
+                EMOTION
+              </div>
+
+              <div class="direction-name" data-i18n="emotionName">
+                Emotion Burst
+              </div>
+
+              <div class="direction-cn" data-i18n="emotionCn">
+                情绪爆发
+              </div>
+
+              <div class="why">
+                <div class="why-label" data-i18n="whyLabel">
+                  Why this works
+                </div>
+
+                <div class="why-text" data-i18n="emotionWhy">
+                  Put the strongest emotion in the first visual moment.
+                </div>
+              </div>
+
+              <button
+                class="reveal-btn"
+                onclick="revealDirection('emotion')"
+                data-i18n="reveal">
+                Reveal
+              </button>
+
+            </div>
+
+          </article>
+
+
+          <!-- Direction 2 -->
+          <article class="direction">
+
+            <div class="direction-preview">
+              <div class="mock-image">
+                <div class="mock-subject"></div>
+              </div>
+            </div>
+
+            <div class="direction-meta">
+
+              <div class="direction-type">
+                FOCUS
+              </div>
+
+              <div class="direction-name" data-i18n="focusName">
+                Extreme Focus
+              </div>
+
+              <div class="direction-cn" data-i18n="focusCn">
+                极致聚焦
+              </div>
+
+              <div class="why">
+                <div class="why-label" data-i18n="whyLabel">
+                  Why this works
+                </div>
+
+                <div class="why-text" data-i18n="focusWhy">
+                  One dominant subject makes the cover instantly readable.
+                </div>
+              </div>
+
+              <button
+                class="reveal-btn"
+                onclick="revealDirection('focus')"
+                data-i18n="reveal">
+                Reveal
+              </button>
+
+            </div>
+
+          </article>
+
+
+          <!-- Direction 3 -->
+          <article class="direction">
+
+            <div class="direction-preview">
+              <div class="mock-image">
+                <div class="mock-subject"></div>
+              </div>
+            </div>
+
+            <div class="direction-meta">
+
+              <div class="direction-type">
+                CURIOSITY
+              </div>
+
+              <div class="direction-name" data-i18n="curiosityName">
+                Curiosity Gap
+              </div>
+
+              <div class="direction-cn" data-i18n="curiosityCn">
+                好奇心缺口
+              </div>
+
+              <div class="why">
+                <div class="why-label" data-i18n="whyLabel">
+                  Why this works
+                </div>
+
+                <div class="why-text" data-i18n="curiosityWhy">
+                  The subject is clear, but the outcome stays hidden.
+                </div>
+              </div>
+
+              <button
+                class="reveal-btn"
+                onclick="revealDirection('curiosity')"
+                data-i18n="reveal">
+                Reveal
+              </button>
+
+            </div>
+
+          </article>
+
+        </div>
+
+      </section>
+
+
+      <!-- FINAL COVER STUDIO -->
+      <section class="cover-studio" id="coverStudio">
+
+        <div class="studio-head">
+
+          <div>
+            <div class="section-kicker" data-i18n="studioKicker">
+              Your cover
+            </div>
+
+            <h2 class="section-title" data-i18n="studioTitle">
+              Now make it yours.
+            </h2>
+
+            <p class="section-desc" data-i18n="studioDesc">
+              Keep the idea. Fine-tune the details.
+            </p>
+          </div>
+
+        </div>
+
+
+        <div class="studio-grid">
+
+          <div class="cover-canvas">
+
+            <div class="cover-final" id="coverFinal">
+
+              <div class="mock-subject"></div>
+
+              <div class="cover-text" id="coverText">
+                THIS CHANGES
+                EVERYTHING
+                <small>SNIPS / COVER STUDY</small>
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="controls">
+
+            <div class="control-group">
+
+              <div class="control-label" data-i18n="titleLabel">
+                Title
+              </div>
+
+              <input
+                class="control-input"
+                id="titleInput"
+                value="THIS CHANGES EVERYTHING"
+                oninput="updateCoverText()"
+              >
+
+            </div>
+
+
+            <div class="control-group">
+
+              <div class="control-label" data-i18n="cropLabel">
+                Subject scale
+              </div>
+
+              <input
+                class="range"
+                id="scaleRange"
+                type="range"
+                min="70"
+                max="145"
+                value="100"
+                oninput="updateScale()"
+              >
+
+            </div>
+
+
+            <div class="control-group">
+
+              <div class="control-label" data-i18n="positionLabel">
+                Subject position
+              </div>
+
+              <input
+                class="range"
+                id="positionRange"
+                type="range"
+                min="-25"
+                max="25"
+                value="0"
+                oninput="updatePosition()"
+              >
+
+            </div>
+
+
+            <div class="control-actions">
+
+              <button
+                class="export"
+                onclick="fakeExport()"
+                data-i18n="export">
+                Export cover
+              </button>
+
+              <button
+                class="restart"
+                onclick="restart()"
+                data-i18n="startAgain">
+                Start again
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </section>
+
+
+    <footer class="footer">
+      <span>snips / cover studio</span>
+      <span>AI-assisted creative direction</span>
+    </footer>
+
+  </main>
+
+</div>
+
+
+<!-- REVEAL -->
+<div class="reveal-layer" id="revealLayer">
+
+  <button class="close-reveal" onclick="closeReveal()">×</button>
+
+  <div class="reveal-box">
+
+    <div class="reveal-visual" id="revealVisual">
+      <div class="mock-image">
+        <div class="mock-subject"></div>
+      </div>
+
+      <div class="reveal-title-overlay" id="revealOverlay">
+        SEE WHAT<br>HAPPENS NEXT
+      </div>
+    </div>
+
+    <div class="reveal-content">
+
+      <div class="reveal-tag" id="revealTag">
+        EMOTION
+      </div>
+
+      <div class="reveal-name" id="revealName">
+        Emotion Burst
+      </div>
+
+      <div class="reveal-reason" id="revealReason">
+        The strongest emotional moment becomes the visual hook.
+      </div>
+
+      <div class="reveal-actions">
+
+        <button class="keep" onclick="keepDirection()" data-i18n="keep">
+          Keep
+        </button>
+
+        <button class="refine" onclick="refineDirection()" data-i18n="refine">
+          Refine
+        </button>
+
+        <button class="try-another" onclick="closeReveal()" data-i18n="tryAnother">
+          Try another direction
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<div class="toast" id="toast"></div>
+
+
+<script>
+
+/* =========================================================
+   SNIPS V3
+   Single-file prototype
+========================================================= */
+
+let lang = localStorage.getItem("snips_lang") || "zh";
+let currentDirection = null;
+let uploadedFile = null;
+
+
+/* ---------------- I18N ---------------- */
+
+const I18N = {
+
+  zh:{
+    eyebrow:"AI COVER STUDIO",
+    hero1:"让这一帧",
+    hero2:"值得被点击。",
+    heroSub:"Snips 找到视频里最值得成为封面的瞬间，并为它设计真正不同的视觉方向。",
+
+    dropTitle:"把视频拖到这里",
+    dropSub:"也可以使用图片 / 多张图片",
+    uploadVideo:"上传视频",
+    uploadImage:"添加图片",
+    pasteLink:"粘贴链接",
+
+    intentLabel:"你希望它感觉怎么样？",
+    intentPlaceholder:"例如：高级一点，但要让人忍不住想点进去",
+    findCover:"找到封面 →",
+
+    loadingTitle:"正在看你的内容。",
+    loadingCopy:"寻找那些值得被点击的瞬间。",
+    load1:"理解内容",
+    load2:"寻找 Snips",
+    load3:"读取高表现封面规律",
+    load4:"构建三个创意方向",
+
+    snipsKicker:"你的 Snips",
+    snipsTitle:"值得成为封面的瞬间。",
+    snipsDesc:"我们找到了视觉潜力最强的几个瞬间。",
+    snipsFound:"个 Snips",
+
+    snip1:"情绪峰值",
+    snip2:"主体最突出",
+    snip3:"好奇心最强",
+    snip4:"构图最干净",
+    snip5:"视觉张力",
+
+    directionKicker:"三个方向",
+    directionTitle:"三种让人点击的方式。",
+    directionDesc:"不是三个版本，而是三个真正不同的创意。",
+
+    emotionName:"Emotion Burst",
+    emotionCn:"情绪爆发",
+    emotionWhy:"把最强的情绪放进第一视觉瞬间。",
+
+    focusName:"Extreme Focus",
+    focusCn:"极致聚焦",
+    focusWhy:"只留下一个主导主体，让封面一眼就能被读懂。",
+
+    curiosityName:"Curiosity Gap",
+    curiosityCn:"好奇心缺口",
+    curiosityWhy:"主体很明确，但结果没有被完全揭示。",
+
+    whyLabel:"为什么推荐",
+    reveal:"Reveal",
+
+    keep:"保留这个方向",
+    refine:"继续优化",
+    tryAnother:"换一个方向",
+
+    studioKicker:"你的封面",
+    studioTitle:"现在，让它成为你的。",
+    studioDesc:"保留创意方向，只调整必要的细节。",
+
+    titleLabel:"标题",
+    cropLabel:"主体大小",
+    positionLabel:"主体位置",
+
+    export:"导出封面",
+    startAgain:"重新开始"
+  },
+
+  en:{
+    eyebrow:"AI COVER STUDIO",
+    hero1:"Make the frame",
+    hero2:"worth clicking.",
+    heroSub:"Snips finds the moments worth turning into covers and creates genuinely different visual directions.",
+
+    dropTitle:"Drop your video here",
+    dropSub:"or use an image / multiple images",
+    uploadVideo:"Upload video",
+    uploadImage:"Add images",
+    pasteLink:"Paste link",
+
+    intentLabel:"What should it feel like?",
+    intentPlaceholder:"e.g. premium, but impossible not to click",
+    findCover:"Find the cover →",
+
+    loadingTitle:"Looking at your content.",
+    loadingCopy:"Finding the moments worth clicking.",
+    load1:"Understanding the content",
+    load2:"Finding your Snips",
+    load3:"Reading high-performing patterns",
+    load4:"Building three directions",
+
+    snipsKicker:"Your Snips",
+    snipsTitle:"Moments worth a cover.",
+    snipsDesc:"We found the moments with the strongest visual potential.",
+    snipsFound:"Snips found",
+
+    snip1:"Peak emotion",
+    snip2:"Strong subject",
+    snip3:"Curiosity",
+    snip4:"Clean composition",
+    snip5:"Visual tension",
+
+    directionKicker:"Three directions",
+    directionTitle:"Different ways to make it click.",
+    directionDesc:"Not three versions. Three different ideas.",
+
+    emotionName:"Emotion Burst",
+    emotionCn:"Emotional impact",
+    emotionWhy:"Put the strongest emotion in the first visual moment.",
+
+    focusName:"Extreme Focus",
+    focusCn:"Extreme focus",
+    focusWhy:"One dominant subject makes the cover instantly readable.",
+
+    curiosityName:"Curiosity Gap",
+    curiosityCn:"Curiosity gap",
+    curiosityWhy:"The subject is clear, but the outcome stays hidden.",
+
+    whyLabel:"Why this works",
+    reveal:"Reveal",
+
+    keep:"Keep",
+    refine:"Refine",
+    tryAnother:"Try another direction",
+
+    studioKicker:"Your cover",
+    studioTitle:"Now make it yours.",
+    studioDesc:"Keep the idea. Fine-tune the details.",
+
+    titleLabel:"Title",
+    cropLabel:"Subject scale",
+    positionLabel:"Subject position",
+
+    export:"Export cover",
+    startAgain:"Start again"
+  }
+
+};
+
+
+/* ---------------- Language ---------------- */
+
+function setLang(next){
+
+  lang = next;
+
+  localStorage.setItem("snips_lang",lang);
+
+  document.documentElement.lang =
+    lang === "zh" ? "zh-CN" : "en";
+
+  document.getElementById("zhBtn")
+    .classList.toggle("active",lang==="zh");
+
+  document.getElementById("enBtn")
+    .classList.toggle("active",lang==="en");
+
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const key = el.dataset.i18n;
+    if(I18N[lang][key]){
+      el.textContent = I18N[lang][key];
+    }
+  });
+
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{
+    const key = el.dataset.i18nPlaceholder;
+    if(I18N[lang][key]){
+      el.placeholder = I18N[lang][key];
+    }
+  });
+
+  document.querySelectorAll(".suggestion").forEach(btn=>{
+    btn.textContent = lang === "zh"
+      ? btn.dataset.zh
+      : btn.dataset.en;
+  });
+}
+
+
+/* ---------------- Upload ---------------- */
+
+const dropzone = document.getElementById("dropzone");
+const videoInput = document.getElementById("videoInput");
+const imageInput = document.getElementById("imageInput");
+
+videoInput.addEventListener("change",e=>{
+  if(e.target.files.length){
+    uploadedFile = e.target.files[0];
+    showUploadState(uploadedFile.name);
+  }
+});
+
+imageInput.addEventListener("change",e=>{
+  if(e.target.files.length){
+    uploadedFile = e.target.files[0];
+    showUploadState(
+      e.target.files.length > 1
+        ? `${e.target.files.length} images`
+        : uploadedFile.name
+    );
+  }
+});
+
+
+dropzone.addEventListener("dragover",e=>{
+  e.preventDefault();
+  dropzone.classList.add("dragging");
+});
+
+dropzone.addEventListener("dragleave",()=>{
+  dropzone.classList.remove("dragging");
+});
+
+dropzone.addEventListener("drop",e=>{
+
+  e.preventDefault();
+
+  dropzone.classList.remove("dragging");
+
+  if(e.dataTransfer.files.length){
+
+    uploadedFile = e.dataTransfer.files[0];
+
+    showUploadState(uploadedFile.name);
+  }
+
+});
+
+
+function showUploadState(name){
+
+  const title = dropzone.querySelector(".drop-title");
+  const sub = dropzone.querySelector(".drop-sub");
+
+  title.textContent = name;
+
+  sub.textContent =
+    lang === "zh"
+      ? "内容已准备好，告诉 Snips 你想要什么感觉。"
+      : "Ready. Tell Snips how you want it to feel.";
+
+}
+
+
+/* ---------------- URL ---------------- */
+
+function toggleUrl(){
+
+  const row = document.getElementById("urlRow");
+
+  row.classList.toggle("show");
+
+  if(row.classList.contains("show")){
+    document.getElementById("urlInput").focus();
+  }
+
+}
+
+
+function acceptUrl(){
+
+  const value = document.getElementById("urlInput").value.trim();
+
+  if(!value){
+    toast(
+      lang === "zh"
+        ? "先粘贴一个视频链接"
+        : "Paste a video link first."
+    );
+    return;
+  }
+
+  uploadedFile = {
+    type:"url",
+    name:value
+  };
+
+  showUploadState(
+    lang === "zh"
+      ? "视频链接已添加"
+      : "Video link added"
+  );
+
+}
+
+
+/* ---------------- Suggestion ---------------- */
+
+function useSuggestion(btn){
+
+  const value =
+    lang === "zh"
+      ? btn.dataset.zh
+      : btn.dataset.en;
+
+  document.getElementById("intentInput").value = value;
+
+}
+
+
+/* ---------------- Analysis ---------------- */
+
+function startAnalysis(){
+
+  const loading = document.getElementById("loadingScreen");
+  const input = document.getElementById("inputArea");
+  const results = document.getElementById("results");
+
+  input.style.display = "none";
+  loading.classList.add("show");
+
+  const steps = [
+    "step1",
+    "step2",
+    "step3",
+    "step4"
+  ];
+
+  steps.forEach((id,i)=>{
+
+    setTimeout(()=>{
+      document.getElementById(id)
+        .classList.add("active");
+    },700 * i);
+
+  });
+
+
+  setTimeout(()=>{
+
+    loading.classList.remove("show");
+
+    results.classList.add("show");
+
+    window.scrollTo({
+      top:0,
+      behavior:"smooth"
+    });
+
+  },3600);
+
+}
+
+
+/* ---------------- Reveal ---------------- */
+
+const directionData = {
+
+  emotion:{
+    tag:"EMOTION",
+    name:{
+      zh:"Emotion Burst",
+      en:"Emotion Burst"
+    },
+    reason:{
+      zh:"把内容里最强烈的情绪峰值直接变成第一视觉钩子。",
+      en:"Turn the strongest emotional peak into the first visual hook."
+    },
+    title:{
+      zh:"情绪，先于信息。",
+      en:"FEEL IT FIRST."
+    }
+  },
+
+  focus:{
+    tag:"FOCUS",
+    name:{
+      zh:"Extreme Focus",
+      en:"Extreme Focus"
+    },
+    reason:{
+      zh:"放大一个最有价值的主体，让用户在极短时间内读懂封面。",
+      en:"One dominant subject makes the cover instantly readable."
+    },
+    title:{
+      zh:"只看这里。",
+      en:"LOOK CLOSER."
+    }
+  },
+
+  curiosity:{
+    tag:"CURIOSITY",
+    name:{
+      zh:"Curiosity Gap",
+      en:"Curiosity Gap"
+    },
+    reason:{
+      zh:"让用户知道发生了什么，但故意不告诉他最后会发生什么。",
+      en:"Show enough to understand the story, but hide the outcome."
+    },
+    title:{
+      zh:"然后发生了什么？",
+      en:"WHAT HAPPENS NEXT?"
+    }
+  }
+
+};
+
+
+function revealDirection(type){
+
+  currentDirection = type;
+
+  const data = directionData[type];
+
+  document.getElementById("revealTag")
+    .textContent = data.tag;
+
+  document.getElementById("revealName")
+    .textContent = data.name[lang];
+
+  document.getElementById("revealReason")
+    .textContent = data.reason[lang];
+
+  document.getElementById("revealOverlay")
+    .innerHTML =
+      data.title[lang]
+        .replace(" ","<br>");
+
+  const visual =
+    document.querySelector("#revealVisual .mock-image");
+
+  if(type === "emotion"){
+    visual.style.background =
+      "linear-gradient(145deg,#222 0 25%,#999 26% 60%,#ddd 61%)";
+  }
+
+  if(type === "focus"){
+    visual.style.background =
+      "linear-gradient(145deg,#e8e8e3 0 35%,#171717 36% 75%,#777 76%)";
+  }
+
+  if(type === "curiosity"){
+    visual.style.background =
+      "linear-gradient(145deg,#111 0 42%,#666 43% 65%,#e8e8e3 66%)";
+  }
+
+  document.getElementById("revealLayer")
+    .classList.add("show");
+
+  document.body.style.overflow = "hidden";
+
+}
+
+
+function closeReveal(){
+
+  document.getElementById("revealLayer")
+    .classList.remove("show");
+
+  document.body.style.overflow = "";
+
+}
+
+
+function keepDirection(){
+
+  closeReveal();
+
+  const studio =
+    document.getElementById("coverStudio");
+
+  studio.classList.add("show");
+
+  setTimeout(()=>{
+
+    studio.scrollIntoView({
+      behavior:"smooth",
+      block:"start"
+    });
+
+  },100);
+
+  toast(
+    lang === "zh"
+      ? "方向已保留"
+      : "Direction kept"
+  );
+
+}
+
+
+function refineDirection(){
+
+  closeReveal();
+
+  const input =
+    document.getElementById("intentInput");
+
+  input.value =
+    lang === "zh"
+      ? "保留这个方向，但让视觉更有冲击力"
+      : "Keep this direction, but make it more striking.";
+
+  input.closest(".intent").scrollIntoView({
+    behavior:"smooth"
+  });
+
+  toast(
+    lang === "zh"
+      ? "告诉 Snips 你想怎么优化"
+      : "Tell Snips how you want to refine it."
+  );
+
+}
+
+
+/* ---------------- Cover Studio ---------------- */
+
+function updateCoverText(){
+
+  const value =
+    document.getElementById("titleInput").value.trim();
+
+  document.getElementById("coverText").childNodes[0].nodeValue =
+    value + "\n";
+
+}
+
+
+function updateScale(){
+
+  const value =
+    document.getElementById("scaleRange").value;
+
+  const subject =
+    document.querySelector(".cover-final .mock-subject");
+
+  subject.style.transform =
+    `scale(${value/100})`;
+
+}
+
+
+function updatePosition(){
+
+  const value =
+    document.getElementById("positionRange").value;
+
+  const subject =
+    document.querySelector(".cover-final .mock-subject");
+
+  subject.style.left =
+    `calc(34% + ${value}px)`;
+
+}
+
+
+function fakeExport(){
+
+  toast(
+    lang === "zh"
+      ? "封面已准备好导出"
+      : "Your cover is ready to export."
+  );
+
+}
+
+
+/* ---------------- Restart ---------------- */
+
+function restart(){
+
+  document.getElementById("results")
+    .classList.remove("show");
+
+  document.getElementById("coverStudio")
+    .classList.remove("show");
+
+  document.getElementById("inputArea")
+    .style.display = "";
+
+  document.getElementById("loadingScreen")
+    .classList.remove("show");
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+}
+
+
+/* ---------------- Toast ---------------- */
+
+let toastTimer;
+
+function toast(message){
+
+  const el =
+    document.getElementById("toast");
+
+  el.textContent = message;
+
+  el.classList.add("show");
+
+  clearTimeout(toastTimer);
+
+  toastTimer = setTimeout(()=>{
+    el.classList.remove("show");
+  },2200);
+
+}
+
+
+/* ---------------- Init ---------------- */
+
+setLang(lang);
+
+</script>
+
+</body>
+</html>
