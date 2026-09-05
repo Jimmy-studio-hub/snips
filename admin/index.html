@@ -2,21 +2,42 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
 
   <title>Snips Admin — AI Control Center</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     * {
       box-sizing: border-box;
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       margin: 0;
       background: #f5f5f3;
       color: #171717;
-      font-family: Inter, -apple-system, BlinkMacSystemFont,
-        "Segoe UI", Arial, sans-serif;
+      font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
     }
 
     .app {
@@ -24,16 +45,23 @@
       display: flex;
     }
 
-    /* Sidebar */
+    /* =========================
+       Sidebar
+    ========================= */
 
     .sidebar {
       width: 230px;
+      min-height: 100vh;
       background: #111;
       color: white;
       padding: 28px 18px;
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
     }
 
     .logo {
@@ -61,6 +89,8 @@
       font-size: 14px;
       color: #aaa;
       cursor: pointer;
+      transition: .15s ease;
+      user-select: none;
     }
 
     .nav-item.active,
@@ -74,14 +104,66 @@
       padding: 12px;
       font-size: 11px;
       color: #666;
+      line-height: 1.7;
     }
 
-    /* Main */
+    .user-box {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #191919;
+    }
+
+    .user-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .user-email {
+      font-size: 11px;
+      color: #aaa;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .logout {
+      width: 100%;
+      margin-top: 10px;
+      border: 1px solid #333;
+      background: transparent;
+      color: #aaa;
+      padding: 8px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .logout:hover {
+      background: #242424;
+      color: white;
+    }
+
+    /* =========================
+       Main
+    ========================= */
 
     .main {
       flex: 1;
       min-width: 0;
       padding: 36px 42px;
+      margin-left: 230px;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
     }
 
     .topbar {
@@ -119,10 +201,20 @@
       width: 7px;
       height: 7px;
       border-radius: 50%;
+      background: #aaa;
+    }
+
+    .status-dot.online {
       background: #28a745;
     }
 
-    /* Cards */
+    .status-dot.offline {
+      background: #d33;
+    }
+
+    /* =========================
+       Metrics
+    ========================= */
 
     .metrics {
       display: grid;
@@ -158,6 +250,10 @@
       font-size: 11px;
     }
 
+    /* =========================
+       Sections
+    ========================= */
+
     .section {
       background: white;
       border: 1px solid #e7e7e5;
@@ -189,7 +285,9 @@
       padding: 20px;
     }
 
-    /* AI config */
+    /* =========================
+       Config
+    ========================= */
 
     .config-grid {
       display: grid;
@@ -222,8 +320,9 @@
     }
 
     .field textarea {
-      min-height: 150px;
+      min-height: 180px;
       resize: vertical;
+      line-height: 1.6;
     }
 
     .field input:focus,
@@ -237,10 +336,15 @@
       grid-column: 1 / -1;
     }
 
+    /* =========================
+       Buttons
+    ========================= */
+
     .button-row {
       display: flex;
       gap: 8px;
       margin-top: 18px;
+      flex-wrap: wrap;
     }
 
     button {
@@ -256,12 +360,27 @@
       color: white;
     }
 
+    .primary:hover {
+      background: #292929;
+    }
+
     .secondary {
       background: #f0f0ee;
       color: #333;
     }
 
-    /* Request */
+    .secondary:hover {
+      background: #e6e6e3;
+    }
+
+    button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    /* =========================
+       Request
+    ========================= */
 
     .request {
       display: grid;
@@ -269,29 +388,329 @@
       gap: 14px;
     }
 
+    .request-label {
+      font-size: 11px;
+      color: #777;
+      margin-bottom: 7px;
+    }
+
     .code-box {
       background: #111;
       color: #ddd;
       border-radius: 10px;
       padding: 16px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        monospace;
       font-size: 11px;
       line-height: 1.7;
       min-height: 190px;
+      max-height: 430px;
       overflow: auto;
       white-space: pre-wrap;
+      word-break: break-word;
     }
 
-    .empty {
-      color: #888;
-      font-size: 12px;
-      padding: 25px 0;
+    /* =========================
+       Playground
+    ========================= */
+
+    .playground-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .dropzone {
+      min-height: 260px;
+      border: 1px dashed #ccc;
+      border-radius: 12px;
+      background: #fafaf9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      cursor: pointer;
+      transition: .15s ease;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .dropzone:hover {
+      border-color: #999;
+      background: #f7f7f5;
+    }
+
+    .dropzone input {
+      display: none;
+    }
+
+    .drop-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: #111;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 14px;
+    }
+
+    .drop-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .drop-description {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #999;
       text-align: center;
     }
 
-    /* Mobile */
+    .preview {
+      display: none;
+      width: 100%;
+      height: 260px;
+      object-fit: contain;
+      background: #111;
+    }
+
+    .test-result {
+      margin-top: 18px;
+    }
+
+    .result-empty {
+      min-height: 260px;
+      border: 1px solid #e7e7e5;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: 12px;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .result-json {
+      display: none;
+      background: #111;
+      color: #ddd;
+      border-radius: 12px;
+      padding: 18px;
+      min-height: 260px;
+      max-height: 500px;
+      overflow: auto;
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        monospace;
+      font-size: 11px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .test-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .tag {
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: #f0f0ee;
+      color: #666;
+      font-size: 10px;
+    }
+
+    /* =========================
+       Logs
+    ========================= */
+
+    .log-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .log-item {
+      display: grid;
+      grid-template-columns: 130px 100px 1fr 100px;
+      gap: 15px;
+      align-items: center;
+      padding: 13px 14px;
+      border: 1px solid #ededeb;
+      border-radius: 9px;
+      font-size: 11px;
+    }
+
+    .log-time {
+      color: #888;
+    }
+
+    .log-type {
+      font-weight: 600;
+    }
+
+    .log-status {
+      color: #28a745;
+    }
+
+    .log-empty {
+      padding: 40px;
+      text-align: center;
+      color: #999;
+      font-size: 12px;
+    }
+
+    /* =========================
+       Prompt
+    ========================= */
+
+    .prompt-card {
+      border: 1px solid #e7e7e5;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 12px;
+    }
+
+    .prompt-name {
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .prompt-meta {
+      margin-top: 4px;
+      color: #999;
+      font-size: 10px;
+    }
+
+    .prompt-text {
+      margin-top: 14px;
+      padding: 14px;
+      background: #fafaf9;
+      border-radius: 8px;
+      color: #555;
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        monospace;
+      font-size: 11px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    /* =========================
+       Architecture
+    ========================= */
+
+    .pipeline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 20px 0;
+    }
+
+    .pipeline-step {
+      padding: 10px 13px;
+      background: #f4f4f2;
+      border: 1px solid #e5e5e2;
+      border-radius: 8px;
+      font-size: 11px;
+    }
+
+    .pipeline-arrow {
+      color: #aaa;
+      font-size: 12px;
+    }
+
+    /* =========================
+       Toast
+    ========================= */
+
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      background: #111;
+      color: white;
+      padding: 12px 15px;
+      border-radius: 9px;
+      font-size: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: .2s ease;
+      z-index: 100;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* =========================
+       Loading
+    ========================= */
+
+    .loading {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .loading-dot {
+      width: 6px;
+      height: 6px;
+      background: currentColor;
+      border-radius: 50%;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: .25;
+      }
+
+      50% {
+        opacity: 1;
+      }
+    }
+
+    /* =========================
+       Mobile
+    ========================= */
+
+    @media (max-width: 1000px) {
+
+      .metrics {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .playground-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .request {
+        grid-template-columns: 1fr;
+      }
+
+    }
 
     @media (max-width: 850px) {
+
       .sidebar {
         width: 70px;
         padding: 22px 10px;
@@ -300,11 +719,16 @@
       .logo {
         font-size: 0;
         text-align: center;
+        padding: 0;
       }
 
       .logo::after {
         content: "S";
         font-size: 20px;
+      }
+
+      .logo span {
+        display: none;
       }
 
       .nav-item {
@@ -320,25 +744,32 @@
         display: none;
       }
 
+      .user-box {
+        display: none;
+      }
+
       .main {
+        margin-left: 70px;
         padding: 24px 18px;
       }
 
-      .metrics {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .config-grid,
-      .request {
+      .config-grid {
         grid-template-columns: 1fr;
       }
 
       .full {
         grid-column: auto;
       }
+
+      .log-item {
+        grid-template-columns: 1fr;
+        gap: 5px;
+      }
+
     }
 
     @media (max-width: 520px) {
+
       .metrics {
         grid-template-columns: 1fr;
       }
@@ -348,6 +779,15 @@
         gap: 15px;
         flex-direction: column;
       }
+
+      .main {
+        padding: 20px 14px;
+      }
+
+      .page-title {
+        font-size: 24px;
+      }
+
     }
   </style>
 </head>
@@ -356,7 +796,9 @@
 
 <div class="app">
 
-  <!-- Sidebar -->
+  <!-- =========================
+       Sidebar
+  ========================== -->
 
   <aside class="sidebar">
 
@@ -366,236 +808,707 @@
 
     <nav class="nav">
 
-      <div class="nav-item active">
-        Overview
+      <div
+        class="nav-item active"
+        onclick="showPage('overview', this)"
+      >
+        ◉ Overview
       </div>
 
-      <div class="nav-item">
-        AI Playground
+      <div
+        class="nav-item"
+        onclick="showPage('playground', this)"
+      >
+        ◇ AI Playground
       </div>
 
-      <div class="nav-item">
-        Prompts
+      <div
+        class="nav-item"
+        onclick="showPage('prompts', this)"
+      >
+        ≡ Prompts
       </div>
 
-      <div class="nav-item">
-        Model
+      <div
+        class="nav-item"
+        onclick="showPage('model', this)"
+      >
+        ⚙ Model
       </div>
 
-      <div class="nav-item">
-        Request Logs
+      <div
+        class="nav-item"
+        onclick="showPage('logs', this)"
+      >
+        ▤ Request Logs
       </div>
 
     </nav>
 
     <div class="sidebar-bottom">
+
       Snips AI Control Center<br>
-      v0.1
+      v0.2
+
+      <div class="user-box">
+
+        <div class="user-label">
+          Signed in as
+        </div>
+
+        <div
+          class="user-email"
+          id="userEmail"
+        >
+          Checking...
+        </div>
+
+        <button
+          class="logout"
+          onclick="logout()"
+        >
+          Sign out
+        </button>
+
+      </div>
+
     </div>
 
   </aside>
 
 
-  <!-- Main -->
+  <!-- =========================
+       Main
+  ========================== -->
 
   <main class="main">
 
-    <div class="topbar">
 
-      <div>
-        <h1 class="page-title">
-          AI Control Center
-        </h1>
+    <!-- =========================
+         OVERVIEW
+    ========================== -->
 
-        <div class="page-subtitle">
-          Monitor and test the intelligence behind Snips.
-        </div>
-      </div>
+    <section
+      class="page active"
+      id="overview"
+    >
 
-      <div class="status">
-        <span class="status-dot"></span>
-        AI Connected
-      </div>
+      <div class="topbar">
 
-    </div>
+        <div>
 
+          <h1 class="page-title">
+            AI Control Center
+          </h1>
 
-    <!-- Metrics -->
+          <div class="page-subtitle">
+            Monitor and test the intelligence behind Snips.
+          </div>
 
-    <section class="metrics">
-
-      <div class="metric">
-
-        <div class="metric-label">
-          AI Status
         </div>
 
-        <div class="metric-value">
-          Connected
-        </div>
+        <div class="status">
 
-        <div class="metric-note">
-          OpenAI API
-        </div>
+          <span
+            class="status-dot"
+            id="statusDot"
+          ></span>
 
-      </div>
+          <span id="statusText">
+            Checking session
+          </span>
 
-
-      <div class="metric">
-
-        <div class="metric-label">
-          Model
-        </div>
-
-        <div class="metric-value">
-          GPT-5.6 Luna
-        </div>
-
-        <div class="metric-note">
-          Vision capable
         </div>
 
       </div>
 
 
-      <div class="metric">
+      <!-- Metrics -->
 
-        <div class="metric-label">
-          Last Request
+      <section class="metrics">
+
+        <div class="metric">
+
+          <div class="metric-label">
+            Auth Status
+          </div>
+
+          <div
+            class="metric-value"
+            id="authMetric"
+          >
+            —
+          </div>
+
+          <div class="metric-note">
+            Supabase Auth
+          </div>
+
         </div>
 
-        <div class="metric-value">
-          —
+
+        <div class="metric">
+
+          <div class="metric-label">
+            Model
+          </div>
+
+          <div
+            class="metric-value"
+            id="modelMetric"
+          >
+            GPT-5.6 Luna
+          </div>
+
+          <div class="metric-note">
+            Configured model
+          </div>
+
         </div>
 
-        <div class="metric-note">
-          No request yet
+
+        <div class="metric">
+
+          <div class="metric-label">
+            Last Request
+          </div>
+
+          <div
+            class="metric-value"
+            id="lastRequestMetric"
+          >
+            —
+          </div>
+
+          <div class="metric-note">
+            This session
+          </div>
+
         </div>
 
-      </div>
 
+        <div class="metric">
 
-      <div class="metric">
+          <div class="metric-label">
+            Requests
+          </div>
 
-        <div class="metric-label">
-          Requests
+          <div
+            class="metric-value"
+            id="requestCountMetric"
+          >
+            0
+          </div>
+
+          <div class="metric-note">
+            This session
+          </div>
+
         </div>
 
-        <div class="metric-value">
-          0
+      </section>
+
+
+      <!-- AI Pipeline -->
+
+      <section class="section">
+
+        <div class="section-header">
+
+          <div>
+
+            <div class="section-title">
+              AI Pipeline
+            </div>
+
+            <div class="section-description">
+              How Snips processes a visual request.
+            </div>
+
+          </div>
+
         </div>
 
-        <div class="metric-note">
-          This session
+
+        <div class="section-body">
+
+          <div class="pipeline">
+
+            <div class="pipeline-step">
+              Upload Image
+            </div>
+
+            <div class="pipeline-arrow">
+              →
+            </div>
+
+            <div class="pipeline-step">
+              Vision AI
+            </div>
+
+            <div class="pipeline-arrow">
+              →
+            </div>
+
+            <div class="pipeline-step">
+              Visual Analysis
+            </div>
+
+            <div class="pipeline-arrow">
+              →
+            </div>
+
+            <div class="pipeline-step">
+              Snips
+            </div>
+
+            <div class="pipeline-arrow">
+              →
+            </div>
+
+            <div class="pipeline-step">
+              Cover Directions
+            </div>
+
+            <div class="pipeline-arrow">
+              →
+            </div>
+
+            <div class="pipeline-step">
+              Final Cover
+            </div>
+
+          </div>
+
         </div>
 
-      </div>
+      </section>
+
+
+      <!-- Last Request -->
+
+      <section class="section">
+
+        <div class="section-header">
+
+          <div>
+
+            <div class="section-title">
+              Last AI Request
+            </div>
+
+            <div class="section-description">
+              The actual request sent from the Playground.
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="section-body">
+
+          <div class="request">
+
+            <div>
+
+              <div class="request-label">
+                Request
+              </div>
+
+              <div
+                class="code-box"
+                id="requestBox"
+              >
+No AI request yet.
+
+Run an AI test from AI Playground.
+              </div>
+
+            </div>
+
+
+            <div>
+
+              <div class="request-label">
+                Response
+              </div>
+
+              <div
+                class="code-box"
+                id="responseBox"
+              >
+No AI response yet.
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
 
     </section>
 
 
-    <!-- AI Configuration -->
+    <!-- =========================
+         AI PLAYGROUND
+    ========================== -->
 
-    <section class="section">
+    <section
+      class="page"
+      id="playground"
+    >
 
-      <div class="section-header">
+      <div class="topbar">
 
         <div>
-          <div class="section-title">
-            AI Configuration
+
+          <h1 class="page-title">
+            AI Playground
+          </h1>
+
+          <div class="page-subtitle">
+            Test the actual Snips visual analysis pipeline.
           </div>
 
-          <div class="section-description">
-            Current configuration used by Snips.
-          </div>
         </div>
 
       </div>
 
 
-      <div class="section-body">
+      <section class="section">
 
-        <div class="config-grid">
+        <div class="section-header">
 
-          <div class="field">
+          <div>
 
-            <label>
-              Model
-            </label>
+            <div class="section-title">
+              Vision Test
+            </div>
 
-            <select id="model">
-
-              <option value="gpt-5.6-luna">
-                GPT-5.6 Luna
-              </option>
-
-            </select>
+            <div class="section-description">
+              Upload an image and send it to the Snips AI backend.
+            </div>
 
           </div>
 
+        </div>
 
-          <div class="field">
 
-            <label>
-              AI Mode
-            </label>
+        <div class="section-body">
 
-            <select id="mode">
+          <div class="playground-grid">
 
-              <option>
-                Vision + Text
-              </option>
+            <!-- Upload -->
 
-              <option>
-                Text Only
-              </option>
+            <div>
 
-            </select>
+              <label
+                class="dropzone"
+                id="dropzone"
+              >
+
+                <input
+                  type="file"
+                  id="testImage"
+                  accept="image/*"
+                  onchange="handleTestImage(event)"
+                />
+
+                <div
+                  class="drop-icon"
+                  id="dropIcon"
+                >
+                  +
+                </div>
+
+                <div
+                  class="drop-title"
+                  id="dropTitle"
+                >
+                  Upload image
+                </div>
+
+                <div
+                  class="drop-description"
+                  id="dropDescription"
+                >
+                  Select an image to test real Vision analysis.
+                </div>
+
+                <img
+                  class="preview"
+                  id="imagePreview"
+                  alt="Preview"
+                />
+
+              </label>
+
+
+              <div class="button-row">
+
+                <button
+                  class="primary"
+                  id="runTestButton"
+                  onclick="runAITest()"
+                >
+                  Run AI Test
+                </button>
+
+                <button
+                  class="secondary"
+                  onclick="clearTest()"
+                >
+                  Clear
+                </button>
+
+              </div>
+
+            </div>
+
+
+            <!-- Result -->
+
+            <div>
+
+              <div
+                class="result-empty"
+                id="resultEmpty"
+              >
+                No AI result yet.<br><br>
+                Upload an image and run a test.
+              </div>
+
+              <div
+                class="result-json"
+                id="resultJson"
+              ></div>
+
+              <div
+                class="test-meta"
+                id="testMeta"
+              ></div>
+
+            </div>
 
           </div>
 
+        </div>
 
-          <div class="field">
+      </section>
 
-            <label>
-              Max Snips
-            </label>
+    </section>
 
-            <input
-              id="maxSnips"
-              type="number"
-              value="5"
-              min="1"
-              max="10"
-            />
+
+    <!-- =========================
+         PROMPTS
+    ========================== -->
+
+    <section
+      class="page"
+      id="prompts"
+    >
+
+      <div class="topbar">
+
+        <div>
+
+          <h1 class="page-title">
+            Prompts
+          </h1>
+
+          <div class="page-subtitle">
+            Prompt definitions used by Snips.
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <section class="section">
+
+        <div class="section-header">
+
+          <div>
+
+            <div class="section-title">
+              Active Prompts
+            </div>
+
+            <div class="section-description">
+              Current prompt configuration.
+            </div>
 
           </div>
 
+        </div>
 
-          <div class="field">
 
-            <label>
-              Cover Directions
-            </label>
+        <div class="section-body">
 
-            <input
-              id="directionCount"
-              type="number"
-              value="3"
-              min="1"
-              max="5"
-            />
+          <div class="prompt-card">
+
+            <div class="prompt-name">
+              Snips Vision Director
+            </div>
+
+            <div class="prompt-meta">
+              Primary visual analysis prompt
+            </div>
+
+            <div
+              class="prompt-text"
+              id="promptPreview"
+            >
+You are Snips.
+
+Analyze the provided visual content and identify the strongest visual moments that could become clickable cover images.
+
+Focus on visual hierarchy, subject emphasis, emotion, curiosity, composition and clickability.
+
+Never invent visual information that does not exist in the provided image.
+            </div>
 
           </div>
 
+        </div>
 
-          <div class="field full">
+      </section>
 
-            <label>
-              System Prompt
-            </label>
+    </section>
 
-            <textarea id="systemPrompt">You are Snips.
+
+    <!-- =========================
+         MODEL
+    ========================== -->
+
+    <section
+      class="page"
+      id="model"
+    >
+
+      <div class="topbar">
+
+        <div>
+
+          <h1 class="page-title">
+            Model
+          </h1>
+
+          <div class="page-subtitle">
+            Configure how Snips communicates with the AI backend.
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <section class="section">
+
+        <div class="section-header">
+
+          <div>
+
+            <div class="section-title">
+              AI Configuration
+            </div>
+
+            <div class="section-description">
+              These settings control the Snips analysis request.
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="section-body">
+
+          <div class="config-grid">
+
+            <div class="field">
+
+              <label>
+                Model
+              </label>
+
+              <select id="model">
+
+                <option value="gpt-5.6-luna">
+                  GPT-5.6 Luna
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                AI Mode
+              </label>
+
+              <select id="mode">
+
+                <option value="Vision + Text">
+                  Vision + Text
+                </option>
+
+                <option value="Text Only">
+                  Text Only
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                Max Snips
+              </label>
+
+              <input
+                id="maxSnips"
+                type="number"
+                value="5"
+                min="1"
+                max="10"
+              />
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                Cover Directions
+              </label>
+
+              <input
+                id="directionCount"
+                type="number"
+                value="3"
+                min="1"
+                max="5"
+              />
+
+            </div>
+
+
+            <div class="field full">
+
+              <label>
+                System Prompt
+              </label>
+
+              <textarea id="systemPrompt">You are Snips.
 
 You are an AI creative director for video covers.
 
@@ -610,130 +1523,110 @@ Focus on:
 5. Composition
 6. Clickability
 
-Do not invent visual information that does not exist in the provided image.</textarea>
+Do not invent visual information that does not exist in the provided image.
+
+Return structured JSON.
+
+The analysis must be based only on the visual information actually provided.</textarea>
+
+            </div>
+
+          </div>
+
+
+          <div class="button-row">
+
+            <button
+              class="primary"
+              onclick="saveConfig()"
+            >
+              Save Configuration
+            </button>
+
+            <button
+              class="secondary"
+              onclick="resetConfig()"
+            >
+              Reset
+            </button>
 
           </div>
 
         </div>
 
+      </section>
 
-        <div class="button-row">
+    </section>
 
-          <button
-            class="primary"
-            onclick="saveConfig()"
-          >
-            Save Configuration
-          </button>
+
+    <!-- =========================
+         LOGS
+    ========================== -->
+
+    <section
+      class="page"
+      id="logs"
+    >
+
+      <div class="topbar">
+
+        <div>
+
+          <h1 class="page-title">
+            Request Logs
+          </h1>
+
+          <div class="page-subtitle">
+            AI requests made during this session.
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <section class="section">
+
+        <div class="section-header">
+
+          <div>
+
+            <div class="section-title">
+              Recent Requests
+            </div>
+
+            <div class="section-description">
+              Local session log. Server-side logging will be added next.
+            </div>
+
+          </div>
 
           <button
             class="secondary"
-            onclick="resetConfig()"
+            onclick="clearLogs()"
           >
-            Reset
+            Clear
           </button>
 
         </div>
 
-      </div>
 
-    </section>
+        <div class="section-body">
 
+          <div
+            class="log-list"
+            id="logList"
+          >
 
-    <!-- Last Request -->
-
-    <section class="section">
-
-      <div class="section-header">
-
-        <div>
-          <div class="section-title">
-            Last AI Request
-          </div>
-
-          <div class="section-description">
-            The actual request sent to the AI.
-          </div>
-        </div>
-
-      </div>
-
-
-      <div class="section-body">
-
-        <div class="request">
-
-          <div>
-
-            <div
-              class="code-box"
-              id="requestBox"
-            >
-No AI request yet.
-
-Run an AI test from AI Playground.
-            </div>
-
-          </div>
-
-
-          <div>
-
-            <div
-              class="code-box"
-              id="responseBox"
-            >
-No AI response yet.
+            <div class="log-empty">
+              No requests yet.
             </div>
 
           </div>
 
         </div>
 
-      </div>
-
-    </section>
-
-
-    <!-- Architecture -->
-
-    <section class="section">
-
-      <div class="section-header">
-
-        <div>
-          <div class="section-title">
-            AI Pipeline
-          </div>
-
-          <div class="section-description">
-            How Snips processes a visual request.
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="section-body">
-
-        <div class="empty">
-
-          Upload Image
-          →
-          Vision AI
-          →
-          Visual Analysis
-          →
-          Snips
-          →
-          Cover Directions
-          →
-          Final Cover
-
-        </div>
-
-      </div>
+      </section>
 
     </section>
 
@@ -742,35 +1635,265 @@ No AI response yet.
 </div>
 
 
+<div
+  class="toast"
+  id="toast"
+></div>
+
+
 <script>
+
+  /* ==========================================================
+     SUPABASE
+  ========================================================== */
+
+  const SUPABASE_URL =
+    "https://xmfoffunrnsaadpfsoqa.supabase.co";
+
+  const SUPABASE_ANON_KEY =
+    "sb_publishable_PhX73slxoIqiQFx_J5ddtw_fkxIhk5o";
+
+
+  const {
+    createClient
+  } = supabase;
+
+
+  const supabaseClient =
+    createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+
+
+  /* ==========================================================
+     SESSION
+  ========================================================== */
+
+  let currentUser = null;
+
+
+  async function checkAdminSession() {
+
+    try {
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.auth.getSession();
+
+
+      if (error || !data.session) {
+
+        window.location.href =
+          "/admin/login.html";
+
+        return;
+
+      }
+
+
+      currentUser =
+        data.session.user;
+
+
+      document.getElementById(
+        "userEmail"
+      ).textContent =
+        currentUser.email || "Admin";
+
+
+      document.getElementById(
+        "authMetric"
+      ).textContent =
+        "Authenticated";
+
+
+      document.getElementById(
+        "statusDot"
+      ).classList.add("online");
+
+
+      document.getElementById(
+        "statusText"
+      ).textContent =
+        "Session Active";
+
+
+    } catch (error) {
+
+      console.error(
+        "Session check failed:",
+        error
+      );
+
+
+      window.location.href =
+        "/admin/login.html";
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     LOGOUT
+  ========================================================== */
+
+  async function logout() {
+
+    try {
+
+      await supabaseClient.auth.signOut();
+
+    } finally {
+
+      window.location.href =
+        "/admin/login.html";
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     PAGE NAVIGATION
+  ========================================================== */
+
+  function showPage(
+    pageId,
+    element
+  ) {
+
+    document
+      .querySelectorAll(".page")
+      .forEach(page => {
+
+        page.classList.remove("active");
+
+      });
+
+
+    const target =
+      document.getElementById(pageId);
+
+
+    if (!target) return;
+
+
+    target.classList.add("active");
+
+
+    document
+      .querySelectorAll(".nav-item")
+      .forEach(item => {
+
+        item.classList.remove("active");
+
+      });
+
+
+    if (element) {
+
+      element.classList.add("active");
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     CONFIG
+  ========================================================== */
+
+  const defaultConfig = {
+
+    model:
+      "gpt-5.6-luna",
+
+    mode:
+      "Vision + Text",
+
+    maxSnips:
+      5,
+
+    directionCount:
+      3,
+
+    systemPrompt:
+`You are Snips.
+
+You are an AI creative director for video covers.
+
+Analyze the provided visual content and identify the strongest visual moments that could become clickable cover images.
+
+Focus on:
+
+1. Visual hierarchy
+2. Subject emphasis
+3. Emotion
+4. Curiosity
+5. Composition
+6. Clickability
+
+Do not invent visual information that does not exist in the provided image.
+
+Return structured JSON.
+
+The analysis must be based only on the visual information actually provided.`
+
+  };
+
 
   function saveConfig() {
 
     const config = {
 
       model:
-        document.getElementById("model").value,
+        document.getElementById(
+          "model"
+        ).value,
 
       mode:
-        document.getElementById("mode").value,
+        document.getElementById(
+          "mode"
+        ).value,
 
       maxSnips:
-        document.getElementById("maxSnips").value,
+        Number(
+          document.getElementById(
+            "maxSnips"
+          ).value
+        ),
 
       directionCount:
-        document.getElementById("directionCount").value,
+        Number(
+          document.getElementById(
+            "directionCount"
+          ).value
+        ),
 
       systemPrompt:
-        document.getElementById("systemPrompt").value
+        document.getElementById(
+          "systemPrompt"
+        ).value
 
     };
+
 
     localStorage.setItem(
       "snips_ai_config",
       JSON.stringify(config)
     );
 
-    alert("AI configuration saved.");
+
+    updatePromptPreview();
+
+
+    showToast(
+      "AI configuration saved."
+    );
 
   }
 
@@ -781,7 +1904,43 @@ No AI response yet.
       "snips_ai_config"
     );
 
-    location.reload();
+
+    document.getElementById(
+      "model"
+    ).value =
+      defaultConfig.model;
+
+
+    document.getElementById(
+      "mode"
+    ).value =
+      defaultConfig.mode;
+
+
+    document.getElementById(
+      "maxSnips"
+    ).value =
+      defaultConfig.maxSnips;
+
+
+    document.getElementById(
+      "directionCount"
+    ).value =
+      defaultConfig.directionCount;
+
+
+    document.getElementById(
+      "systemPrompt"
+    ).value =
+      defaultConfig.systemPrompt;
+
+
+    updatePromptPreview();
+
+
+    showToast(
+      "Configuration reset."
+    );
 
   }
 
@@ -793,43 +1952,707 @@ No AI response yet.
         "snips_ai_config"
       );
 
-    if (!saved) return;
+
+    if (!saved) {
+
+      updatePromptPreview();
+
+      return;
+
+    }
+
 
     try {
 
       const config =
         JSON.parse(saved);
 
+
       if (config.model)
-        document.getElementById("model").value =
+        document.getElementById(
+          "model"
+        ).value =
           config.model;
 
+
       if (config.mode)
-        document.getElementById("mode").value =
+        document.getElementById(
+          "mode"
+        ).value =
           config.mode;
 
+
       if (config.maxSnips)
-        document.getElementById("maxSnips").value =
+        document.getElementById(
+          "maxSnips"
+        ).value =
           config.maxSnips;
 
+
       if (config.directionCount)
-        document.getElementById("directionCount").value =
+        document.getElementById(
+          "directionCount"
+        ).value =
           config.directionCount;
 
+
       if (config.systemPrompt)
-        document.getElementById("systemPrompt").value =
+        document.getElementById(
+          "systemPrompt"
+        ).value =
           config.systemPrompt;
+
+
+      updatePromptPreview();
+
 
     } catch (error) {
 
-      console.error(error);
+      console.error(
+        "Config load error:",
+        error
+      );
 
     }
 
   }
 
 
+  function updatePromptPreview() {
+
+    const prompt =
+      document.getElementById(
+        "systemPrompt"
+      ).value;
+
+
+    document.getElementById(
+      "promptPreview"
+    ).textContent =
+      prompt;
+
+  }
+
+
+  /* ==========================================================
+     IMAGE TEST
+  ========================================================== */
+
+  let testImageData = null;
+  let testImageFile = null;
+
+
+  function handleTestImage(event) {
+
+    const file =
+      event.target.files?.[0];
+
+
+    if (!file) return;
+
+
+    testImageFile =
+      file;
+
+
+    const reader =
+      new FileReader();
+
+
+    reader.onload =
+      function(e) {
+
+        testImageData =
+          e.target.result;
+
+
+        const preview =
+          document.getElementById(
+            "imagePreview"
+          );
+
+
+        preview.src =
+          testImageData;
+
+
+        preview.style.display =
+          "block";
+
+
+        document.getElementById(
+          "dropIcon"
+        ).style.display =
+          "none";
+
+
+        document.getElementById(
+          "dropTitle"
+        ).style.display =
+          "none";
+
+
+        document.getElementById(
+          "dropDescription"
+        ).style.display =
+          "none";
+
+      };
+
+
+    reader.readAsDataURL(file);
+
+  }
+
+
+  function clearTest() {
+
+    testImageData = null;
+    testImageFile = null;
+
+
+    document.getElementById(
+      "testImage"
+    ).value = "";
+
+
+    const preview =
+      document.getElementById(
+        "imagePreview"
+      );
+
+
+    preview.src = "";
+    preview.style.display = "none";
+
+
+    document.getElementById(
+      "dropIcon"
+    ).style.display =
+      "flex";
+
+
+    document.getElementById(
+      "dropTitle"
+    ).style.display =
+      "block";
+
+
+    document.getElementById(
+      "dropDescription"
+    ).style.display =
+      "block";
+
+
+    document.getElementById(
+      "resultEmpty"
+    ).style.display =
+      "flex";
+
+
+    document.getElementById(
+      "resultJson"
+    ).style.display =
+      "none";
+
+
+    document.getElementById(
+      "testMeta"
+    ).innerHTML =
+      "";
+
+  }
+
+
+  /* ==========================================================
+     REAL AI TEST
+  ========================================================== */
+
+  async function runAITest() {
+
+    if (!testImageData) {
+
+      showToast(
+        "Please upload an image first."
+      );
+
+      return;
+
+    }
+
+
+    const button =
+      document.getElementById(
+        "runTestButton"
+      );
+
+
+    button.disabled =
+      true;
+
+
+    button.innerHTML =
+      `<span class="loading">
+        <span class="loading-dot"></span>
+        Running AI...
+      </span>`;
+
+
+    const startTime =
+      performance.now();
+
+
+    const config =
+      getCurrentConfig();
+
+
+    const requestPayload = {
+
+      intent:
+        "Find the strongest visual moments for a highly clickable video cover.",
+
+      contentType:
+        "image",
+
+      fileName:
+        testImageFile?.name || "",
+
+      images:
+        [testImageData],
+
+      config: {
+
+        model:
+          config.model,
+
+        mode:
+          config.mode,
+
+        maxSnips:
+          config.maxSnips,
+
+        directionCount:
+          config.directionCount,
+
+        systemPrompt:
+          config.systemPrompt
+
+      }
+
+    };
+
+
+    document.getElementById(
+      "requestBox"
+    ).textContent =
+      JSON.stringify(
+        requestPayload,
+        null,
+        2
+      );
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/analyze",
+          {
+
+            method:
+              "POST",
+
+            headers: {
+
+              "Content-Type":
+                "application/json"
+
+            },
+
+            body:
+              JSON.stringify(
+                requestPayload
+              )
+
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      const duration =
+        Math.round(
+          performance.now() -
+          startTime
+        );
+
+
+      document.getElementById(
+        "responseBox"
+      ).textContent =
+        JSON.stringify(
+          data,
+          null,
+          2
+        );
+
+
+      document.getElementById(
+        "resultEmpty"
+      ).style.display =
+        "none";
+
+
+      const result =
+        document.getElementById(
+          "resultJson"
+        );
+
+
+      result.textContent =
+        JSON.stringify(
+          data,
+          null,
+          2
+        );
+
+
+      result.style.display =
+        "block";
+
+
+      document.getElementById(
+        "testMeta"
+      ).innerHTML = `
+
+        <span class="tag">
+          ${duration} ms
+        </span>
+
+        <span class="tag">
+          ${response.ok ? "SUCCESS" : "ERROR"}
+        </span>
+
+        <span class="tag">
+          ${config.model}
+        </span>
+
+      `;
+
+
+      updateMetrics(
+        duration,
+        response.ok
+      );
+
+
+      addLog({
+
+        time:
+          new Date().toLocaleTimeString(),
+
+        type:
+          "Vision Analysis",
+
+        status:
+          response.ok
+            ? "SUCCESS"
+            : "ERROR",
+
+        duration:
+          duration + " ms"
+
+      });
+
+
+      if (!response.ok) {
+
+        showToast(
+          data?.error ||
+          "AI request failed."
+        );
+
+      } else {
+
+        showToast(
+          "Real AI request completed."
+        );
+
+      }
+
+
+    } catch (error) {
+
+      console.error(
+        "AI test error:",
+        error
+      );
+
+
+      const duration =
+        Math.round(
+          performance.now() -
+          startTime
+        );
+
+
+      document.getElementById(
+        "responseBox"
+      ).textContent =
+        JSON.stringify(
+          {
+            error:
+              error.message
+          },
+          null,
+          2
+        );
+
+
+      showToast(
+        "AI request failed."
+      );
+
+
+      addLog({
+
+        time:
+          new Date().toLocaleTimeString(),
+
+        type:
+          "Vision Analysis",
+
+        status:
+          "ERROR",
+
+        duration:
+          duration + " ms"
+
+      });
+
+    }
+
+
+    button.disabled =
+      false;
+
+
+    button.textContent =
+      "Run AI Test";
+
+  }
+
+
+  function getCurrentConfig() {
+
+    return {
+
+      model:
+        document.getElementById(
+          "model"
+        ).value,
+
+      mode:
+        document.getElementById(
+          "mode"
+        ).value,
+
+      maxSnips:
+        Number(
+          document.getElementById(
+            "maxSnips"
+          ).value
+        ),
+
+      directionCount:
+        Number(
+          document.getElementById(
+            "directionCount"
+          ).value
+        ),
+
+      systemPrompt:
+        document.getElementById(
+          "systemPrompt"
+        ).value
+
+    };
+
+  }
+
+
+  /* ==========================================================
+     METRICS
+  ========================================================== */
+
+  let requestCount = 0;
+
+
+  function updateMetrics(
+    duration,
+    success
+  ) {
+
+    requestCount++;
+
+
+    document.getElementById(
+      "requestCountMetric"
+    ).textContent =
+      requestCount;
+
+
+    document.getElementById(
+      "lastRequestMetric"
+    ).textContent =
+      duration + " ms";
+
+  }
+
+
+  /* ==========================================================
+     LOGS
+  ========================================================== */
+
+  let logs = [];
+
+
+  function addLog(log) {
+
+    logs.unshift(log);
+
+
+    renderLogs();
+
+  }
+
+
+  function renderLogs() {
+
+    const container =
+      document.getElementById(
+        "logList"
+      );
+
+
+    if (!logs.length) {
+
+      container.innerHTML = `
+        <div class="log-empty">
+          No requests yet.
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    container.innerHTML =
+      logs.map(log => `
+
+        <div class="log-item">
+
+          <div class="log-time">
+            ${escapeHtml(log.time)}
+          </div>
+
+          <div class="log-type">
+            ${escapeHtml(log.type)}
+          </div>
+
+          <div>
+            ${log.status === "SUCCESS"
+              ? "AI request completed"
+              : "AI request failed"}
+          </div>
+
+          <div class="log-status">
+            ${escapeHtml(log.duration)}
+          </div>
+
+        </div>
+
+      `).join("");
+
+  }
+
+
+  function clearLogs() {
+
+    logs = [];
+
+    renderLogs();
+
+    showToast(
+      "Logs cleared."
+    );
+
+  }
+
+
+  /* ==========================================================
+     UTILITIES
+  ========================================================== */
+
+  function escapeHtml(value) {
+
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+  }
+
+
+  function showToast(message) {
+
+    const toast =
+      document.getElementById(
+        "toast"
+      );
+
+
+    toast.textContent =
+      message;
+
+
+    toast.classList.add(
+      "show"
+    );
+
+
+    clearTimeout(
+      window.__toastTimer
+    );
+
+
+    window.__toastTimer =
+      setTimeout(
+        () => {
+
+          toast.classList.remove(
+            "show"
+          );
+
+        },
+        2200
+      );
+
+  }
+
+
+  /* ==========================================================
+     INIT
+  ========================================================== */
+
   loadConfig();
+
+  checkAdminSession();
 
 </script>
 
