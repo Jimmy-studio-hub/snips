@@ -231,12 +231,18 @@ button{
   font-size:20px;
   font-weight:720;
   letter-spacing:-.035em;
+  text-align:center;
+  max-width:90%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
 }
 
 .drop-sub{
   color:var(--muted);
   font-size:13px;
   margin-top:8px;
+  text-align:center;
 }
 
 .drop-actions{
@@ -273,6 +279,53 @@ button{
 
 .hidden-input{
   display:none;
+}
+
+/* ---------------- Upload Preview ---------------- */
+
+.upload-preview{
+  display:none;
+  width:min(520px,100%);
+  margin-bottom:18px;
+  position:relative;
+}
+
+.upload-preview.show{
+  display:block;
+}
+
+.upload-preview-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:7px;
+}
+
+.upload-preview-item{
+  aspect-ratio:16/10;
+  border-radius:12px;
+  overflow:hidden;
+  background:#ddd;
+  border:1px solid var(--line);
+}
+
+.upload-preview-item img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+}
+
+.upload-preview-badge{
+  position:absolute;
+  left:10px;
+  top:10px;
+  padding:6px 9px;
+  border-radius:999px;
+  background:rgba(23,23,23,.82);
+  color:white;
+  font-size:10px;
+  font-weight:650;
+  backdrop-filter:blur(8px);
 }
 
 .url-row{
@@ -615,6 +668,14 @@ button{
   margin-top:4px;
 }
 
+.snip-reason{
+  font-size:10px;
+  line-height:1.4;
+  margin-top:4px;
+  color:rgba(255,255,255,.72);
+  max-width:90%;
+}
+
 /* ---------------- Direction ---------------- */
 
 .direction-section{
@@ -795,6 +856,17 @@ button{
   height:100%;
 }
 
+.reveal-image{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:none;
+}
+
+.reveal-image.show{
+  display:block;
+}
+
 .reveal-title-overlay{
   position:absolute;
   left:25px;
@@ -919,6 +991,17 @@ button{
   position:relative;
   background:
     linear-gradient(140deg,#deded8,#373733 48%,#a4a49d);
+}
+
+.cover-final-image{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:none;
+}
+
+.cover-final-image.show{
+  display:block;
 }
 
 .cover-final .mock-subject{
@@ -1142,6 +1225,10 @@ button{
     font-size:10px;
   }
 
+  .snip-reason{
+    font-size:9px;
+  }
+
   .direction-section{
     margin-top:60px;
   }
@@ -1197,6 +1284,10 @@ button{
   .footer{
     margin:55px 10px 0;
   }
+
+  .upload-preview{
+    width:100%;
+  }
 }
 
 @media(max-width:430px){
@@ -1237,6 +1328,10 @@ button{
   .why-text{
     font-size:11px;
   }
+
+  .upload-preview-grid{
+    gap:5px;
+  }
 }
 </style>
 </head>
@@ -1247,73 +1342,165 @@ button{
 
   <!-- HEADER -->
   <header class="header">
+
     <div class="brand">
       <div class="brand-mark"></div>
       <span>snips</span>
     </div>
 
     <div class="header-right">
+
       <div class="lang-wrap">
-        <button class="lang active" id="zhBtn" onclick="setLang('zh')">中</button>
-        <button class="lang" id="enBtn" onclick="setLang('en')">EN</button>
+
+        <button
+          class="lang active"
+          id="zhBtn"
+          onclick="setLang('zh')">
+          中
+        </button>
+
+        <button
+          class="lang"
+          id="enBtn"
+          onclick="setLang('en')">
+          EN
+        </button>
+
       </div>
+
       <div class="avatar">S</div>
+
     </div>
+
   </header>
 
+
   <!-- HERO -->
+
   <section class="hero">
-    <div class="eyebrow" data-i18n="eyebrow">AI COVER STUDIO</div>
+
+    <div
+      class="eyebrow"
+      data-i18n="eyebrow">
+      AI COVER STUDIO
+    </div>
 
     <h1>
       <span data-i18n="hero1">让这一帧</span>
       <span data-i18n="hero2">值得被点击。</span>
     </h1>
 
-    <p class="hero-sub" data-i18n="heroSub">
+    <p
+      class="hero-sub"
+      data-i18n="heroSub">
       Snips 找到视频里最值得成为封面的瞬间，并为它设计真正不同的视觉方向。
     </p>
+
   </section>
 
 
   <main class="workspace">
 
+
     <!-- INPUT -->
-    <section class="input-area" id="inputArea">
+
+    <section
+      class="input-area"
+      id="inputArea">
 
       <div class="input-card">
 
-        <div class="dropzone" id="dropzone">
+        <div
+          class="dropzone"
+          id="dropzone">
+
+
+          <div
+            class="upload-preview"
+            id="uploadPreview">
+
+            <div
+              class="upload-preview-grid"
+              id="uploadPreviewGrid">
+            </div>
+
+            <div
+              class="upload-preview-badge"
+              id="uploadPreviewBadge">
+              AI READY
+            </div>
+
+          </div>
+
 
           <div class="upload-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8">
+
               <path d="M12 16V4"/>
               <path d="m7 9 5-5 5 5"/>
               <path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>
+
             </svg>
+
           </div>
 
-          <div class="drop-title" data-i18n="dropTitle">
+
+          <div
+            class="drop-title"
+            data-i18n="dropTitle">
+
             把视频拖到这里
+
           </div>
 
-          <div class="drop-sub" data-i18n="dropSub">
+
+          <div
+            class="drop-sub"
+            data-i18n="dropSub">
+
             也可以使用图片 / 多张图片
+
           </div>
+
 
           <div class="drop-actions">
-            <button class="primary-btn" onclick="videoInput.click()" data-i18n="uploadVideo">
+
+            <button
+              class="primary-btn"
+              onclick="videoInput.click()"
+              data-i18n="uploadVideo">
+
               上传视频
+
             </button>
 
-            <button class="secondary-btn" onclick="imageInput.click()" data-i18n="uploadImage">
+
+            <button
+              class="secondary-btn"
+              onclick="imageInput.click()"
+              data-i18n="uploadImage">
+
               添加图片
+
             </button>
 
-            <button class="secondary-btn" onclick="toggleUrl()" data-i18n="pasteLink">
+
+            <button
+              class="secondary-btn"
+              onclick="toggleUrl()"
+              data-i18n="pasteLink">
+
               粘贴链接
+
             </button>
+
           </div>
+
 
           <input
             type="file"
@@ -1321,6 +1508,7 @@ button{
             class="hidden-input"
             accept="video/*"
           >
+
 
           <input
             type="file"
@@ -1332,24 +1520,40 @@ button{
 
         </div>
 
-        <div class="url-row" id="urlRow">
+
+        <div
+          class="url-row"
+          id="urlRow">
+
           <input
             id="urlInput"
             type="url"
             placeholder="Paste video link..."
           >
-          <button class="url-go" onclick="acceptUrl()">→</button>
+
+          <button
+            class="url-go"
+            onclick="acceptUrl()">
+            →
+          </button>
+
         </div>
 
       </div>
 
 
       <!-- INTENT -->
+
       <div class="intent">
 
-        <div class="intent-label" data-i18n="intentLabel">
+        <div
+          class="intent-label"
+          data-i18n="intentLabel">
+
           你希望它感觉怎么样？
+
         </div>
+
 
         <textarea
           id="intentInput"
@@ -1357,38 +1561,65 @@ button{
           placeholder="例如：高级一点，但要让人忍不住想点进去"
         ></textarea>
 
+
         <div class="intent-footer">
 
           <div class="suggestion-row">
 
-            <button class="suggestion" onclick="useSuggestion(this)"
+            <button
+              class="suggestion"
+              onclick="useSuggestion(this)"
               data-zh="高级、克制"
               data-en="Premium, minimal">
+
               高级、克制
+
             </button>
 
-            <button class="suggestion" onclick="useSuggestion(this)"
+
+            <button
+              class="suggestion"
+              onclick="useSuggestion(this)"
               data-zh="强烈、抓眼"
               data-en="Bold, dramatic">
+
               强烈、抓眼
+
             </button>
 
-            <button class="suggestion" onclick="useSuggestion(this)"
+
+            <button
+              class="suggestion"
+              onclick="useSuggestion(this)"
               data-zh="神秘、想点开"
               data-en="Curious, intriguing">
+
               神秘、想点开
+
             </button>
 
-            <button class="suggestion" onclick="useSuggestion(this)"
+
+            <button
+              class="suggestion"
+              onclick="useSuggestion(this)"
               data-zh="情绪冲击"
               data-en="Emotional">
+
               情绪冲击
+
             </button>
 
           </div>
 
-          <button class="find-btn" onclick="startAnalysis()">
-            <span data-i18n="findCover">找到封面 →</span>
+
+          <button
+            class="find-btn"
+            onclick="startAnalysis()">
+
+            <span data-i18n="findCover">
+              找到封面 →
+            </span>
+
           </button>
 
         </div>
@@ -1399,38 +1630,93 @@ button{
 
 
     <!-- LOADING -->
-    <section class="loading-screen" id="loadingScreen">
+
+    <section
+      class="loading-screen"
+      id="loadingScreen">
 
       <div class="loader"></div>
 
-      <div class="loading-title" data-i18n="loadingTitle">
+
+      <div
+        class="loading-title"
+        id="loadingTitle"
+        data-i18n="loadingTitle">
+
         正在看你的内容。
+
       </div>
 
-      <div class="loading-copy" data-i18n="loadingCopy">
+
+      <div
+        class="loading-copy"
+        id="loadingCopy"
+        data-i18n="loadingCopy">
+
         寻找那些值得被点击的瞬间。
+
       </div>
+
 
       <div class="loading-steps">
 
-        <div class="loading-step" id="step1">
+        <div
+          class="loading-step"
+          id="step1">
+
           <span class="step-dot"></span>
-          <span data-i18n="load1">理解内容</span>
+
+          <span
+            id="load1Text"
+            data-i18n="load1">
+            理解内容
+          </span>
+
         </div>
 
-        <div class="loading-step" id="step2">
+
+        <div
+          class="loading-step"
+          id="step2">
+
           <span class="step-dot"></span>
-          <span data-i18n="load2">寻找 Snips</span>
+
+          <span
+            id="load2Text"
+            data-i18n="load2">
+            寻找 Snips
+          </span>
+
         </div>
 
-        <div class="loading-step" id="step3">
+
+        <div
+          class="loading-step"
+          id="step3">
+
           <span class="step-dot"></span>
-          <span data-i18n="load3">读取高表现封面规律</span>
+
+          <span
+            id="load3Text"
+            data-i18n="load3">
+            读取高表现封面规律
+          </span>
+
         </div>
 
-        <div class="loading-step" id="step4">
+
+        <div
+          class="loading-step"
+          id="step4">
+
           <span class="step-dot"></span>
-          <span data-i18n="load4">构建三个创意方向</span>
+
+          <span
+            id="load4Text"
+            data-i18n="load4">
+            构建三个创意方向
+          </span>
+
         </div>
 
       </div>
@@ -1439,30 +1725,53 @@ button{
 
 
     <!-- RESULTS -->
-    <section class="results" id="results">
+
+    <section
+      class="results"
+      id="results">
+
 
       <!-- SNIPS -->
+
       <section class="snips-section">
 
         <div class="snips-head">
 
           <div>
-            <div class="section-kicker" data-i18n="snipsKicker">
+
+            <div
+              class="section-kicker"
+              data-i18n="snipsKicker">
               你的 Snips
             </div>
 
-            <h2 class="section-title" data-i18n="snipsTitle">
+
+            <h2
+              class="section-title"
+              data-i18n="snipsTitle">
               值得成为封面的瞬间。
             </h2>
 
-            <p class="section-desc" data-i18n="snipsDesc">
+
+            <p
+              class="section-desc"
+              data-i18n="snipsDesc">
               我们找到了视觉潜力最强的几个瞬间。
             </p>
+
           </div>
 
+
           <div class="snips-count">
-            <span id="snipCount">5</span>
-            <span data-i18n="snipsFound">个 Snips</span>
+
+            <span id="snipCount">
+              5
+            </span>
+
+            <span data-i18n="snipsFound">
+              个 Snips
+            </span>
+
           </div>
 
         </div>
@@ -1470,59 +1779,139 @@ button{
 
         <div class="snips-grid">
 
+
+          <!-- SNIP 01 -->
+
           <div class="snip">
+
             <div class="mock-image">
               <div class="mock-subject"></div>
             </div>
 
             <div class="snip-info">
-              <div class="snip-number">SNIP 01</div>
-              <div class="snip-label" data-i18n="snip1">情绪峰值</div>
+
+              <div class="snip-number">
+                SNIP 01
+              </div>
+
+              <div
+                class="snip-label"
+                data-i18n="snip1">
+                情绪峰值
+              </div>
+
+              <div class="snip-reason"></div>
+
             </div>
+
           </div>
 
+
+          <!-- SNIP 02 -->
+
           <div class="snip">
+
             <div class="mock-image two">
               <div class="mock-subject"></div>
             </div>
 
             <div class="snip-info">
-              <div class="snip-number">SNIP 02</div>
-              <div class="snip-label" data-i18n="snip2">主体最突出</div>
+
+              <div class="snip-number">
+                SNIP 02
+              </div>
+
+              <div
+                class="snip-label"
+                data-i18n="snip2">
+                主体最突出
+              </div>
+
+              <div class="snip-reason"></div>
+
             </div>
+
           </div>
 
+
+          <!-- SNIP 03 -->
+
           <div class="snip">
+
             <div class="mock-image three">
               <div class="mock-subject"></div>
             </div>
 
             <div class="snip-info">
-              <div class="snip-number">SNIP 03</div>
-              <div class="snip-label" data-i18n="snip3">好奇心最强</div>
+
+              <div class="snip-number">
+                SNIP 03
+              </div>
+
+              <div
+                class="snip-label"
+                data-i18n="snip3">
+                好奇心最强
+              </div>
+
+              <div class="snip-reason"></div>
+
             </div>
+
           </div>
 
+
+          <!-- SNIP 04 -->
+
           <div class="snip">
+
             <div class="mock-image four">
               <div class="mock-subject"></div>
             </div>
 
             <div class="snip-info">
-              <div class="snip-number">SNIP 04</div>
-              <div class="snip-label" data-i18n="snip4">构图最干净</div>
+
+              <div class="snip-number">
+                SNIP 04
+              </div>
+
+              <div
+                class="snip-label"
+                data-i18n="snip4">
+                构图最干净
+              </div>
+
+              <div class="snip-reason"></div>
+
             </div>
+
           </div>
 
+
+          <!-- SNIP 05 -->
+
           <div class="snip">
+
             <div class="mock-image five">
               <div class="mock-subject"></div>
             </div>
 
             <div class="snip-info">
-              <div class="snip-number">SNIP 05</div>
-              <div class="snip-label" data-i18n="snip5">视觉张力</div>
+
+              <div class="snip-number">
+                SNIP 05
+              </div>
+
+              <div
+                class="snip-label"
+                data-i18n="snip5">
+                视觉张力
+              </div>
+
+              <div class="snip-reason"></div>
+
             </div>
+
           </div>
 
         </div>
@@ -1531,31 +1920,49 @@ button{
 
 
       <!-- DIRECTIONS -->
+
       <section class="direction-section">
 
-        <div class="section-kicker" data-i18n="directionKicker">
+        <div
+          class="section-kicker"
+          data-i18n="directionKicker">
           三个方向
         </div>
 
-        <h2 class="section-title" data-i18n="directionTitle">
+
+        <h2
+          class="section-title"
+          data-i18n="directionTitle">
           三种让人点击的方式。
         </h2>
 
-        <p class="section-desc" data-i18n="directionDesc">
+
+        <p
+          class="section-desc"
+          data-i18n="directionDesc">
           不是三个版本，而是三个真正不同的创意。
         </p>
 
 
         <div class="direction-grid">
 
+
           <!-- Direction 1 -->
-          <article class="direction">
+
+          <article
+            class="direction"
+            data-direction-type="emotion">
 
             <div class="direction-preview">
+
               <div class="mock-image">
+
                 <div class="mock-subject"></div>
+
               </div>
+
             </div>
+
 
             <div class="direction-meta">
 
@@ -1563,29 +1970,46 @@ button{
                 EMOTION
               </div>
 
-              <div class="direction-name" data-i18n="emotionName">
+
+              <div
+                class="direction-name"
+                data-i18n="emotionName">
                 Emotion Burst
               </div>
 
-              <div class="direction-cn" data-i18n="emotionCn">
+
+              <div
+                class="direction-cn"
+                data-i18n="emotionCn">
                 情绪爆发
               </div>
 
+
               <div class="why">
-                <div class="why-label" data-i18n="whyLabel">
+
+                <div
+                  class="why-label"
+                  data-i18n="whyLabel">
                   为什么推荐
                 </div>
 
-                <div class="why-text" data-i18n="emotionWhy">
+
+                <div
+                  class="why-text"
+                  data-i18n="emotionWhy">
                   把最强的情绪放进第一视觉瞬间。
                 </div>
+
               </div>
+
 
               <button
                 class="reveal-btn"
                 onclick="revealDirection('emotion')"
                 data-i18n="reveal">
+
                 Reveal
+
               </button>
 
             </div>
@@ -1594,13 +2018,21 @@ button{
 
 
           <!-- Direction 2 -->
-          <article class="direction">
+
+          <article
+            class="direction"
+            data-direction-type="focus">
 
             <div class="direction-preview">
+
               <div class="mock-image">
+
                 <div class="mock-subject"></div>
+
               </div>
+
             </div>
+
 
             <div class="direction-meta">
 
@@ -1608,29 +2040,46 @@ button{
                 FOCUS
               </div>
 
-              <div class="direction-name" data-i18n="focusName">
+
+              <div
+                class="direction-name"
+                data-i18n="focusName">
                 Extreme Focus
               </div>
 
-              <div class="direction-cn" data-i18n="focusCn">
+
+              <div
+                class="direction-cn"
+                data-i18n="focusCn">
                 极致聚焦
               </div>
 
+
               <div class="why">
-                <div class="why-label" data-i18n="whyLabel">
+
+                <div
+                  class="why-label"
+                  data-i18n="whyLabel">
                   为什么推荐
                 </div>
 
-                <div class="why-text" data-i18n="focusWhy">
+
+                <div
+                  class="why-text"
+                  data-i18n="focusWhy">
                   只留下一个主导主体，让封面一眼就能被读懂。
                 </div>
+
               </div>
+
 
               <button
                 class="reveal-btn"
                 onclick="revealDirection('focus')"
                 data-i18n="reveal">
+
                 Reveal
+
               </button>
 
             </div>
@@ -1639,13 +2088,21 @@ button{
 
 
           <!-- Direction 3 -->
-          <article class="direction">
+
+          <article
+            class="direction"
+            data-direction-type="curiosity">
 
             <div class="direction-preview">
+
               <div class="mock-image">
+
                 <div class="mock-subject"></div>
+
               </div>
+
             </div>
+
 
             <div class="direction-meta">
 
@@ -1653,29 +2110,46 @@ button{
                 CURIOSITY
               </div>
 
-              <div class="direction-name" data-i18n="curiosityName">
+
+              <div
+                class="direction-name"
+                data-i18n="curiosityName">
                 Curiosity Gap
               </div>
 
-              <div class="direction-cn" data-i18n="curiosityCn">
+
+              <div
+                class="direction-cn"
+                data-i18n="curiosityCn">
                 好奇心缺口
               </div>
 
+
               <div class="why">
-                <div class="why-label" data-i18n="whyLabel">
+
+                <div
+                  class="why-label"
+                  data-i18n="whyLabel">
                   为什么推荐
                 </div>
 
-                <div class="why-text" data-i18n="curiosityWhy">
+
+                <div
+                  class="why-text"
+                  data-i18n="curiosityWhy">
                   主体很明确，但结果没有被完全揭示。
                 </div>
+
               </div>
+
 
               <button
                 class="reveal-btn"
                 onclick="revealDirection('curiosity')"
                 data-i18n="reveal">
+
                 Reveal
+
               </button>
 
             </div>
@@ -1688,22 +2162,35 @@ button{
 
 
       <!-- FINAL COVER STUDIO -->
-      <section class="cover-studio" id="coverStudio">
+
+      <section
+        class="cover-studio"
+        id="coverStudio">
 
         <div class="studio-head">
 
           <div>
-            <div class="section-kicker" data-i18n="studioKicker">
+
+            <div
+              class="section-kicker"
+              data-i18n="studioKicker">
               你的封面
             </div>
 
-            <h2 class="section-title" data-i18n="studioTitle">
+
+            <h2
+              class="section-title"
+              data-i18n="studioTitle">
               现在，让它成为你的。
             </h2>
 
-            <p class="section-desc" data-i18n="studioDesc">
+
+            <p
+              class="section-desc"
+              data-i18n="studioDesc">
               保留创意方向，只调整必要的细节。
             </p>
+
           </div>
 
         </div>
@@ -1711,16 +2198,33 @@ button{
 
         <div class="studio-grid">
 
+
           <div class="cover-canvas">
 
-            <div class="cover-final" id="coverFinal">
+            <div
+              class="cover-final"
+              id="coverFinal">
+
+              <img
+                class="cover-final-image"
+                id="coverFinalImage"
+                alt="Snips cover source"
+              >
 
               <div class="mock-subject"></div>
 
-              <div class="cover-text" id="coverText">
+
+              <div
+                class="cover-text"
+                id="coverText">
+
                 THIS CHANGES
                 EVERYTHING
-                <small>SNIPS / COVER STUDY</small>
+
+                <small>
+                  SNIPS / COVER STUDY
+                </small>
+
               </div>
 
             </div>
@@ -1730,11 +2234,15 @@ button{
 
           <div class="controls">
 
+
             <div class="control-group">
 
-              <div class="control-label" data-i18n="titleLabel">
+              <div
+                class="control-label"
+                data-i18n="titleLabel">
                 标题
               </div>
+
 
               <input
                 class="control-input"
@@ -1748,9 +2256,12 @@ button{
 
             <div class="control-group">
 
-              <div class="control-label" data-i18n="cropLabel">
+              <div
+                class="control-label"
+                data-i18n="cropLabel">
                 主体大小
               </div>
+
 
               <input
                 class="range"
@@ -1767,9 +2278,12 @@ button{
 
             <div class="control-group">
 
-              <div class="control-label" data-i18n="positionLabel">
+              <div
+                class="control-label"
+                data-i18n="positionLabel">
                 主体位置
               </div>
+
 
               <input
                 class="range"
@@ -1790,14 +2304,19 @@ button{
                 class="export"
                 onclick="fakeExport()"
                 data-i18n="export">
+
                 导出封面
+
               </button>
+
 
               <button
                 class="restart"
                 onclick="restart()"
                 data-i18n="startAgain">
+
                 重新开始
+
               </button>
 
             </div>
@@ -1812,8 +2331,15 @@ button{
 
 
     <footer class="footer">
-      <span>snips / cover studio</span>
-      <span>AI-assisted creative direction</span>
+
+      <span>
+        snips / cover studio
+      </span>
+
+      <span>
+        AI-assisted creative direction
+      </span>
+
     </footer>
 
   </main>
@@ -1822,48 +2348,114 @@ button{
 
 
 <!-- REVEAL -->
-<div class="reveal-layer" id="revealLayer">
 
-  <button class="close-reveal" onclick="closeReveal()">×</button>
+<div
+  class="reveal-layer"
+  id="revealLayer">
+
+
+  <button
+    class="close-reveal"
+    onclick="closeReveal()">
+
+    ×
+
+  </button>
+
 
   <div class="reveal-box">
 
-    <div class="reveal-visual" id="revealVisual">
+
+    <div
+      class="reveal-visual"
+      id="revealVisual">
+
       <div class="mock-image">
+
         <div class="mock-subject"></div>
+
       </div>
 
-      <div class="reveal-title-overlay" id="revealOverlay">
-        SEE WHAT<br>HAPPENS NEXT
+
+      <img
+        class="reveal-image"
+        id="revealImage"
+        alt="Snips reveal"
+      >
+
+
+      <div
+        class="reveal-title-overlay"
+        id="revealOverlay">
+
+        SEE WHAT<br>
+        HAPPENS NEXT
+
       </div>
+
     </div>
+
 
     <div class="reveal-content">
 
-      <div class="reveal-tag" id="revealTag">
+
+      <div
+        class="reveal-tag"
+        id="revealTag">
+
         EMOTION
+
       </div>
 
-      <div class="reveal-name" id="revealName">
+
+      <div
+        class="reveal-name"
+        id="revealName">
+
         Emotion Burst
+
       </div>
 
-      <div class="reveal-reason" id="revealReason">
+
+      <div
+        class="reveal-reason"
+        id="revealReason">
+
         The strongest emotional moment becomes the visual hook.
+
       </div>
+
 
       <div class="reveal-actions">
 
-        <button class="keep" onclick="keepDirection()" data-i18n="keep">
+
+        <button
+          class="keep"
+          onclick="keepDirection()"
+          data-i18n="keep">
+
           保留这个方向
+
         </button>
 
-        <button class="refine" onclick="refineDirection()" data-i18n="refine">
+
+        <button
+          class="refine"
+          onclick="refineDirection()"
+          data-i18n="refine">
+
           继续优化
+
         </button>
 
-        <button class="try-another" onclick="closeReveal()" data-i18n="tryAnother">
+
+        <button
+          class="try-another"
+          onclick="closeReveal()"
+          data-i18n="tryAnother">
+
           换一个方向
+
         </button>
 
       </div>
@@ -1875,293 +2467,860 @@ button{
 </div>
 
 
-<div class="toast" id="toast"></div>
+<div
+  class="toast"
+  id="toast">
+</div>
 
 
 <script>
 
 /* =========================================================
-   SNIPS V3
-   AI CONNECTED VERSION
-   UI / CSS / HTML STRUCTURE PRESERVED
+   SNIPS
+   REAL IMAGE AI VERSION
 ========================================================= */
 
-let lang = localStorage.getItem("snips_lang") || "zh";
+let lang =
+  localStorage.getItem("snips_lang") || "zh";
+
 let currentDirection = null;
+
 let uploadedFile = null;
+
+let uploadedImages = [];
+
+let uploadedImageData = [];
+
 let snipsAIResult = null;
 
 
-/* ---------------- I18N ---------------- */
+/* =========================================================
+   I18N
+========================================================= */
 
 const I18N = {
 
   zh:{
+
     eyebrow:"AI COVER STUDIO",
+
     hero1:"让这一帧",
+
     hero2:"值得被点击。",
-    heroSub:"Snips 找到视频里最值得成为封面的瞬间，并为它设计真正不同的视觉方向。",
 
-    dropTitle:"把视频拖到这里",
-    dropSub:"也可以使用图片 / 多张图片",
-    uploadVideo:"上传视频",
-    uploadImage:"添加图片",
-    pasteLink:"粘贴链接",
+    heroSub:
+      "Snips 找到视频里最值得成为封面的瞬间，并为它设计真正不同的视觉方向。",
 
-    intentLabel:"你希望它感觉怎么样？",
-    intentPlaceholder:"例如：高级一点，但要让人忍不住想点进去",
-    findCover:"找到封面 →",
+    dropTitle:
+      "把视频拖到这里",
 
-    loadingTitle:"正在看你的内容。",
-    loadingCopy:"寻找那些值得被点击的瞬间。",
-    load1:"理解内容",
-    load2:"寻找 Snips",
-    load3:"读取高表现封面规律",
-    load4:"构建三个创意方向",
+    dropSub:
+      "也可以使用图片 / 多张图片",
 
-    snipsKicker:"你的 Snips",
-    snipsTitle:"值得成为封面的瞬间。",
-    snipsDesc:"我们找到了视觉潜力最强的几个瞬间。",
-    snipsFound:"个 Snips",
+    uploadVideo:
+      "上传视频",
 
-    snip1:"情绪峰值",
-    snip2:"主体最突出",
-    snip3:"好奇心最强",
-    snip4:"构图最干净",
-    snip5:"视觉张力",
+    uploadImage:
+      "添加图片",
 
-    directionKicker:"三个方向",
-    directionTitle:"三种让人点击的方式。",
-    directionDesc:"不是三个版本，而是三个真正不同的创意。",
+    pasteLink:
+      "粘贴链接",
 
-    emotionName:"Emotion Burst",
-    emotionCn:"情绪爆发",
-    emotionWhy:"把最强的情绪放进第一视觉瞬间。",
+    intentLabel:
+      "你希望它感觉怎么样？",
 
-    focusName:"Extreme Focus",
-    focusCn:"极致聚焦",
-    focusWhy:"只留下一个主导主体，让封面一眼就能被读懂。",
+    intentPlaceholder:
+      "例如：高级一点，但要让人忍不住想点进去",
 
-    curiosityName:"Curiosity Gap",
-    curiosityCn:"好奇心缺口",
-    curiosityWhy:"主体很明确，但结果没有被完全揭示。",
+    findCover:
+      "找到封面 →",
 
-    whyLabel:"为什么推荐",
-    reveal:"Reveal",
+    loadingTitle:
+      "正在看你的内容。",
 
-    keep:"保留这个方向",
-    refine:"继续优化",
-    tryAnother:"换一个方向",
+    loadingCopy:
+      "寻找那些值得被点击的瞬间。",
 
-    studioKicker:"你的封面",
-    studioTitle:"现在，让它成为你的。",
-    studioDesc:"保留创意方向，只调整必要的细节。",
+    loadingImageTitle:
+      "正在看你的图片。",
 
-    titleLabel:"标题",
-    cropLabel:"主体大小",
-    positionLabel:"主体位置",
+    loadingImageCopy:
+      "识别视觉焦点，并寻找最值得成为封面的 Snips。",
 
-    export:"导出封面",
-    startAgain:"重新开始"
+    load1:
+      "理解内容",
+
+    load2:
+      "寻找 Snips",
+
+    load3:
+      "分析视觉表现力",
+
+    load4:
+      "构建三个创意方向",
+
+    snipsKicker:
+      "你的 Snips",
+
+    snipsTitle:
+      "值得成为封面的瞬间。",
+
+    snipsDesc:
+      "我们找到了视觉潜力最强的几个瞬间。",
+
+    snipsFound:
+      "个 Snips",
+
+    snip1:
+      "情绪峰值",
+
+    snip2:
+      "主体最突出",
+
+    snip3:
+      "好奇心最强",
+
+    snip4:
+      "构图最干净",
+
+    snip5:
+      "视觉张力",
+
+    directionKicker:
+      "三个方向",
+
+    directionTitle:
+      "三种让人点击的方式。",
+
+    directionDesc:
+      "不是三个版本，而是三个真正不同的创意。",
+
+    emotionName:
+      "Emotion Burst",
+
+    emotionCn:
+      "情绪爆发",
+
+    emotionWhy:
+      "把最强的情绪放进第一视觉瞬间。",
+
+    focusName:
+      "Extreme Focus",
+
+    focusCn:
+      "极致聚焦",
+
+    focusWhy:
+      "只留下一个主导主体，让封面一眼就能被读懂。",
+
+    curiosityName:
+      "Curiosity Gap",
+
+    curiosityCn:
+      "好奇心缺口",
+
+    curiosityWhy:
+      "主体很明确，但结果没有被完全揭示。",
+
+    whyLabel:
+      "为什么推荐",
+
+    reveal:
+      "Reveal",
+
+    keep:
+      "保留这个方向",
+
+    refine:
+      "继续优化",
+
+    tryAnother:
+      "换一个方向",
+
+    studioKicker:
+      "你的封面",
+
+    studioTitle:
+      "现在，让它成为你的。",
+
+    studioDesc:
+      "保留创意方向，只调整必要的细节。",
+
+    titleLabel:
+      "标题",
+
+    cropLabel:
+      "主体大小",
+
+    positionLabel:
+      "主体位置",
+
+    export:
+      "导出封面",
+
+    startAgain:
+      "重新开始",
+
+    aiReady:
+      "AI READY",
+
+    imagesReady:
+      "张图片已准备好",
+
+    imageReady:
+      "图片已准备好",
+
+    videoReady:
+      "视频已准备好",
+
+    analyzing:
+      "AI 正在分析"
+
   },
 
+
   en:{
-    eyebrow:"AI COVER STUDIO",
-    hero1:"Make the frame",
-    hero2:"worth clicking.",
-    heroSub:"Snips finds the moments worth turning into covers and creates genuinely different visual directions.",
 
-    dropTitle:"Drop your video here",
-    dropSub:"or use an image / multiple images",
-    uploadVideo:"Upload video",
-    uploadImage:"Add images",
-    pasteLink:"Paste link",
+    eyebrow:
+      "AI COVER STUDIO",
 
-    intentLabel:"What should it feel like?",
-    intentPlaceholder:"e.g. premium, but impossible not to click",
-    findCover:"Find the cover →",
+    hero1:
+      "Make the frame",
 
-    loadingTitle:"Looking at your content.",
-    loadingCopy:"Finding the moments worth clicking.",
-    load1:"Understanding the content",
-    load2:"Finding your Snips",
-    load3:"Reading high-performing patterns",
-    load4:"Building three directions",
+    hero2:
+      "worth clicking.",
 
-    snipsKicker:"Your Snips",
-    snipsTitle:"Moments worth a cover.",
-    snipsDesc:"We found the moments with the strongest visual potential.",
-    snipsFound:"Snips found",
+    heroSub:
+      "Snips finds the moments worth turning into covers and creates genuinely different visual directions.",
 
-    snip1:"Peak emotion",
-    snip2:"Strong subject",
-    snip3:"Curiosity",
-    snip4:"Clean composition",
-    snip5:"Visual tension",
+    dropTitle:
+      "Drop your video here",
 
-    directionKicker:"Three directions",
-    directionTitle:"Different ways to make it click.",
-    directionDesc:"Not three versions. Three different ideas.",
+    dropSub:
+      "or use an image / multiple images",
 
-    emotionName:"Emotion Burst",
-    emotionCn:"Emotional impact",
-    emotionWhy:"Put the strongest emotion in the first visual moment.",
+    uploadVideo:
+      "Upload video",
 
-    focusName:"Extreme Focus",
-    focusCn:"Extreme focus",
-    focusWhy:"One dominant subject makes the cover instantly readable.",
+    uploadImage:
+      "Add images",
 
-    curiosityName:"Curiosity Gap",
-    curiosityCn:"Curiosity gap",
-    curiosityWhy:"The subject is clear, but the outcome stays hidden.",
+    pasteLink:
+      "Paste link",
 
-    whyLabel:"Why this works",
-    reveal:"Reveal",
+    intentLabel:
+      "What should it feel like?",
 
-    keep:"Keep",
-    refine:"Refine",
-    tryAnother:"Try another direction",
+    intentPlaceholder:
+      "e.g. premium, but impossible not to click",
 
-    studioKicker:"Your cover",
-    studioTitle:"Now make it yours.",
-    studioDesc:"Keep the idea. Fine-tune the details.",
+    findCover:
+      "Find the cover →",
 
-    titleLabel:"Title",
-    cropLabel:"Subject scale",
-    positionLabel:"Subject position",
+    loadingTitle:
+      "Looking at your content.",
 
-    export:"Export cover",
-    startAgain:"Start again"
+    loadingCopy:
+      "Finding the moments worth clicking.",
+
+    loadingImageTitle:
+      "Looking at your image.",
+
+    loadingImageCopy:
+      "Finding visual focus and the Snips worth turning into a cover.",
+
+    load1:
+      "Understanding the content",
+
+    load2:
+      "Finding your Snips",
+
+    load3:
+      "Analyzing visual potential",
+
+    load4:
+      "Building three directions",
+
+    snipsKicker:
+      "Your Snips",
+
+    snipsTitle:
+      "Moments worth a cover.",
+
+    snipsDesc:
+      "We found the moments with the strongest visual potential.",
+
+    snipsFound:
+      "Snips found",
+
+    snip1:
+      "Peak emotion",
+
+    snip2:
+      "Strong subject",
+
+    snip3:
+      "Curiosity",
+
+    snip4:
+      "Clean composition",
+
+    snip5:
+      "Visual tension",
+
+    directionKicker:
+      "Three directions",
+
+    directionTitle:
+      "Different ways to make it click.",
+
+    directionDesc:
+      "Not three versions. Three different ideas.",
+
+    emotionName:
+      "Emotion Burst",
+
+    emotionCn:
+      "Emotional impact",
+
+    emotionWhy:
+      "Put the strongest emotion in the first visual moment.",
+
+    focusName:
+      "Extreme Focus",
+
+    focusCn:
+      "Extreme focus",
+
+    focusWhy:
+      "One dominant subject makes the cover instantly readable.",
+
+    curiosityName:
+      "Curiosity Gap",
+
+    curiosityCn:
+      "Curiosity gap",
+
+    curiosityWhy:
+      "The subject is clear, but the outcome stays hidden.",
+
+    whyLabel:
+      "Why this works",
+
+    reveal:
+      "Reveal",
+
+    keep:
+      "Keep",
+
+    refine:
+      "Refine",
+
+    tryAnother:
+      "Try another direction",
+
+    studioKicker:
+      "Your cover",
+
+    studioTitle:
+      "Now make it yours.",
+
+    studioDesc:
+      "Keep the idea. Fine-tune the details.",
+
+    titleLabel:
+      "Title",
+
+    cropLabel:
+      "Subject scale",
+
+    positionLabel:
+      "Subject position",
+
+    export:
+      "Export cover",
+
+    startAgain:
+      "Start again",
+
+    aiReady:
+      "AI READY",
+
+    imagesReady:
+      " images ready",
+
+    imageReady:
+      "Image ready",
+
+    videoReady:
+      "Video ready",
+
+    analyzing:
+      "AI is analyzing"
+
   }
 
 };
 
 
-/* ---------------- Language ---------------- */
+/* =========================================================
+   LANGUAGE
+========================================================= */
 
 function setLang(next){
 
   lang = next;
 
-  localStorage.setItem("snips_lang",lang);
+  localStorage.setItem(
+    "snips_lang",
+    lang
+  );
 
   document.documentElement.lang =
-    lang === "zh" ? "zh-CN" : "en";
+    lang === "zh"
+      ? "zh-CN"
+      : "en";
 
-  document.getElementById("zhBtn")
-    .classList.toggle("active",lang==="zh");
 
-  document.getElementById("enBtn")
-    .classList.toggle("active",lang==="en");
-
-  document.querySelectorAll("[data-i18n]").forEach(el=>{
-    const key = el.dataset.i18n;
-
-    if(I18N[lang][key]){
-      el.textContent = I18N[lang][key];
-    }
-  });
-
-  document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{
-    const key = el.dataset.i18nPlaceholder;
-
-    if(I18N[lang][key]){
-      el.placeholder = I18N[lang][key];
-    }
-  });
-
-  document.querySelectorAll(".suggestion").forEach(btn=>{
-    btn.textContent =
+  document
+    .getElementById("zhBtn")
+    .classList
+    .toggle(
+      "active",
       lang === "zh"
-        ? btn.dataset.zh
-        : btn.dataset.en;
-  });
+    );
+
+
+  document
+    .getElementById("enBtn")
+    .classList
+    .toggle(
+      "active",
+      lang === "en"
+    );
+
+
+  document
+    .querySelectorAll("[data-i18n]")
+    .forEach(el=>{
+
+      const key =
+        el.dataset.i18n;
+
+      if(
+        I18N[lang][key]
+      ){
+
+        el.textContent =
+          I18N[lang][key];
+
+      }
+
+    });
+
+
+  document
+    .querySelectorAll("[data-i18n-placeholder]")
+    .forEach(el=>{
+
+      const key =
+        el.dataset.i18nPlaceholder;
+
+      if(
+        I18N[lang][key]
+      ){
+
+        el.placeholder =
+          I18N[lang][key];
+
+      }
+
+    });
+
+
+  document
+    .querySelectorAll(".suggestion")
+    .forEach(btn=>{
+
+      btn.textContent =
+        lang === "zh"
+          ? btn.dataset.zh
+          : btn.dataset.en;
+
+    });
+
 
   /*
-    如果 AI 已经返回结果，
-    切换语言时重新刷新方向内容。
-  */
-  if(snipsAIResult){
-    updateAIResult(snipsAIResult);
+   * 如果已经上传文件，
+   * 更新上传区域语言
+   */
+
+  if(uploadedImages.length){
+
+    showUploadPreview();
+
   }
+
+
+  /*
+   * 如果 AI 已经返回结果，
+   * 重新刷新方向。
+   */
+
+  if(snipsAIResult){
+
+    updateAIResult(
+      snipsAIResult
+    );
+
+  }
+
 }
 
 
-/* ---------------- Upload ---------------- */
+/* =========================================================
+   UPLOAD
+========================================================= */
 
-const dropzone = document.getElementById("dropzone");
-const videoInput = document.getElementById("videoInput");
-const imageInput = document.getElementById("imageInput");
+const dropzone =
+  document.getElementById(
+    "dropzone"
+  );
 
-videoInput.addEventListener("change",e=>{
+const videoInput =
+  document.getElementById(
+    "videoInput"
+  );
 
-  if(e.target.files.length){
+const imageInput =
+  document.getElementById(
+    "imageInput"
+  );
 
-    uploadedFile = e.target.files[0];
 
-    showUploadState(uploadedFile.name);
+videoInput.addEventListener(
+  "change",
+  e=>{
+
+    if(
+      e.target.files.length
+    ){
+
+      uploadedImages = [];
+
+      uploadedImageData = [];
+
+      uploadedFile =
+        e.target.files[0];
+
+      showUploadState(
+        uploadedFile.name
+      );
+
+    }
+
   }
+);
 
-});
+
+imageInput.addEventListener(
+  "change",
+  e=>{
+
+    if(
+      !e.target.files.length
+    ){
+
+      return;
+
+    }
 
 
-imageInput.addEventListener("change",e=>{
+    /*
+     * 保存全部图片
+     */
 
-  if(e.target.files.length){
+    uploadedImages =
+      Array.from(
+        e.target.files
+      );
 
-    uploadedFile = e.target.files[0];
+
+    /*
+     * 第一张作为主文件
+     */
+
+    uploadedFile =
+      uploadedImages[0];
+
+
+    /*
+     * 显示真实图片预览
+     */
+
+    showUploadPreview();
+
+  }
+);
+
+
+/* =========================================================
+   DRAG & DROP
+========================================================= */
+
+dropzone.addEventListener(
+  "dragover",
+  e=>{
+
+    e.preventDefault();
+
+    dropzone.classList.add(
+      "dragging"
+    );
+
+  }
+);
+
+
+dropzone.addEventListener(
+  "dragleave",
+  ()=>{
+
+    dropzone.classList.remove(
+      "dragging"
+    );
+
+  }
+);
+
+
+dropzone.addEventListener(
+  "drop",
+  e=>{
+
+    e.preventDefault();
+
+    dropzone.classList.remove(
+      "dragging"
+    );
+
+
+    const files =
+      Array.from(
+        e.dataTransfer.files
+      );
+
+
+    if(!files.length){
+
+      return;
+
+    }
+
+
+    const images =
+      files.filter(file=>
+        file.type.startsWith(
+          "image/"
+        )
+      );
+
+
+    if(images.length){
+
+      uploadedImages =
+        images;
+
+      uploadedImages =
+        uploadedImages.slice(
+          0,
+          10
+        );
+
+      uploadedFile =
+        uploadedImages[0];
+
+      showUploadPreview();
+
+      return;
+
+    }
+
+
+    uploadedFile =
+      files[0];
+
+    uploadedImages = [];
+
+    uploadedImageData = [];
 
     showUploadState(
-      e.target.files.length > 1
-        ? `${e.target.files.length} images`
-        : uploadedFile.name
+      uploadedFile.name
     );
+
   }
-
-});
-
-
-dropzone.addEventListener("dragover",e=>{
-
-  e.preventDefault();
-
-  dropzone.classList.add("dragging");
-
-});
+);
 
 
-dropzone.addEventListener("dragleave",()=>{
+/* =========================================================
+   IMAGE PREVIEW
+========================================================= */
 
-  dropzone.classList.remove("dragging");
+function showUploadPreview(){
 
-});
+  const preview =
+    document.getElementById(
+      "uploadPreview"
+    );
+
+  const grid =
+    document.getElementById(
+      "uploadPreviewGrid"
+    );
+
+  const badge =
+    document.getElementById(
+      "uploadPreviewBadge"
+    );
 
 
-dropzone.addEventListener("drop",e=>{
+  grid.innerHTML = "";
 
-  e.preventDefault();
 
-  dropzone.classList.remove("dragging");
+  const displayFiles =
+    uploadedImages.slice(
+      0,
+      3
+    );
 
-  if(e.dataTransfer.files.length){
 
-    uploadedFile = e.dataTransfer.files[0];
+  displayFiles.forEach(
+    file=>{
 
-    showUploadState(uploadedFile.name);
-  }
+      const item =
+        document.createElement(
+          "div"
+        );
 
-});
+      item.className =
+        "upload-preview-item";
 
+
+      const img =
+        document.createElement(
+          "img"
+        );
+
+
+      img.src =
+        URL.createObjectURL(
+          file
+        );
+
+
+      img.onload = ()=>{
+
+        URL.revokeObjectURL(
+          img.src
+        );
+
+      };
+
+
+      item.appendChild(
+        img
+      );
+
+
+      grid.appendChild(
+        item
+      );
+
+    }
+  );
+
+
+  preview.classList.add(
+    "show"
+  );
+
+
+  badge.textContent =
+    lang === "zh"
+      ? (
+          uploadedImages.length +
+          " " +
+          I18N.zh.imagesReady
+        )
+      : (
+          uploadedImages.length +
+          I18N.en.imagesReady
+        );
+
+
+  const title =
+    dropzone.querySelector(
+      ".drop-title"
+    );
+
+
+  const sub =
+    dropzone.querySelector(
+      ".drop-sub"
+    );
+
+
+  title.textContent =
+    uploadedImages.length === 1
+      ? uploadedImages[0].name
+      : (
+          lang === "zh"
+            ? uploadedImages.length +
+              " 张图片"
+            : uploadedImages.length +
+              " images"
+        );
+
+
+  sub.textContent =
+    lang === "zh"
+      ? "AI 已准备好读取图片，告诉 Snips 你想要什么感觉。"
+      : "AI is ready to read the images. Tell Snips how you want them to feel.";
+
+}
+
+
+/* =========================================================
+   NORMAL FILE STATE
+========================================================= */
 
 function showUploadState(name){
 
+  const preview =
+    document.getElementById(
+      "uploadPreview"
+    );
+
+  preview.classList.remove(
+    "show"
+  );
+
+
   const title =
-    dropzone.querySelector(".drop-title");
+    dropzone.querySelector(
+      ".drop-title"
+    );
+
 
   const sub =
-    dropzone.querySelector(".drop-sub");
+    dropzone.querySelector(
+      ".drop-sub"
+    );
 
-  title.textContent = name;
+
+  title.textContent =
+    name;
+
 
   sub.textContent =
     lang === "zh"
@@ -2171,19 +3330,33 @@ function showUploadState(name){
 }
 
 
-/* ---------------- URL ---------------- */
+/* =========================================================
+   URL
+========================================================= */
 
 function toggleUrl(){
 
   const row =
-    document.getElementById("urlRow");
+    document.getElementById(
+      "urlRow"
+    );
 
-  row.classList.toggle("show");
 
-  if(row.classList.contains("show")){
+  row.classList.toggle(
+    "show"
+  );
+
+
+  if(
+    row.classList.contains(
+      "show"
+    )
+  ){
 
     document
-      .getElementById("urlInput")
+      .getElementById(
+        "urlInput"
+      )
       .focus();
 
   }
@@ -2195,9 +3368,12 @@ function acceptUrl(){
 
   const value =
     document
-      .getElementById("urlInput")
+      .getElementById(
+        "urlInput"
+      )
       .value
       .trim();
+
 
   if(!value){
 
@@ -2208,7 +3384,9 @@ function acceptUrl(){
     );
 
     return;
+
   }
+
 
   uploadedFile = {
 
@@ -2217,6 +3395,12 @@ function acceptUrl(){
     name:value
 
   };
+
+
+  uploadedImages = [];
+
+  uploadedImageData = [];
+
 
   showUploadState(
 
@@ -2229,7 +3413,9 @@ function acceptUrl(){
 }
 
 
-/* ---------------- Suggestion ---------------- */
+/* =========================================================
+   SUGGESTION
+========================================================= */
 
 function useSuggestion(btn){
 
@@ -2238,20 +3424,122 @@ function useSuggestion(btn){
       ? btn.dataset.zh
       : btn.dataset.en;
 
+
   document
-    .getElementById("intentInput")
+    .getElementById(
+      "intentInput"
+    )
     .value = value;
 
 }
 
 
-/* ---------------- Utility ---------------- */
+/* =========================================================
+   UTILITY
+========================================================= */
 
 function sleep(ms){
 
-  return new Promise(resolve=>{
-    setTimeout(resolve,ms);
-  });
+  return new Promise(
+    resolve=>{
+      setTimeout(
+        resolve,
+        ms
+      );
+    }
+  );
+
+}
+
+
+/* =========================================================
+   FILE → BASE64
+========================================================= */
+
+function fileToDataURL(file){
+
+  return new Promise(
+    (resolve,reject)=>{
+
+      const reader =
+        new FileReader();
+
+
+      reader.onload = ()=>{
+
+        resolve(
+          reader.result
+        );
+
+      };
+
+
+      reader.onerror = ()=>{
+
+        reject(
+          new Error(
+            "图片读取失败"
+          )
+        );
+
+      };
+
+
+      reader.readAsDataURL(
+        file
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   READ UP TO 3 IMAGES
+========================================================= */
+
+async function prepareImages(){
+
+  if(
+    !uploadedImages.length
+  ){
+
+    return [];
+
+  }
+
+
+  const files =
+    uploadedImages.slice(
+      0,
+      3
+    );
+
+
+  const results = [];
+
+
+  for(
+    const file of files
+  ){
+
+    const data =
+      await fileToDataURL(
+        file
+      );
+
+
+    results.push(data);
+
+  }
+
+
+  uploadedImageData =
+    results;
+
+
+  return results;
 
 }
 
@@ -2263,24 +3551,35 @@ function sleep(ms){
 async function startAnalysis(){
 
   const loading =
-    document.getElementById("loadingScreen");
+    document.getElementById(
+      "loadingScreen"
+    );
+
 
   const input =
-    document.getElementById("inputArea");
+    document.getElementById(
+      "inputArea"
+    );
+
 
   const results =
-    document.getElementById("results");
+    document.getElementById(
+      "results"
+    );
+
 
   const intent =
     document
-      .getElementById("intentInput")
+      .getElementById(
+        "intentInput"
+      )
       .value
       .trim();
 
 
   /*
-    必须先输入创意方向。
-  */
+   * 必须有创意方向
+   */
 
   if(!intent){
 
@@ -2294,28 +3593,72 @@ async function startAnalysis(){
 
     );
 
+
     document
-      .getElementById("intentInput")
+      .getElementById(
+        "intentInput"
+      )
       .focus();
 
+
     return;
+
   }
 
 
   /*
-    隐藏输入区
-  */
+   * 隐藏输入
+   */
 
-  input.style.display = "none";
+  input.style.display =
+    "none";
 
-  results.classList.remove("show");
 
-  loading.classList.add("show");
+  results.classList.remove(
+    "show"
+  );
+
+
+  loading.classList.add(
+    "show"
+  );
 
 
   /*
-    重置 Loading
-  */
+   * Loading 文案
+   */
+
+  const isImage =
+    uploadedImages.length > 0;
+
+
+  document
+    .getElementById(
+      "loadingTitle"
+    )
+    .textContent =
+      isImage
+        ? I18N[lang]
+            .loadingImageTitle
+        : I18N[lang]
+            .loadingTitle;
+
+
+  document
+    .getElementById(
+      "loadingCopy"
+    )
+    .textContent =
+      isImage
+        ? I18N[lang]
+            .loadingImageCopy
+        : I18N[lang]
+            .loadingCopy;
+
+
+  /*
+   * 重置步骤
+   */
 
   const steps = [
     "step1",
@@ -2324,54 +3667,110 @@ async function startAnalysis(){
     "step4"
   ];
 
-  steps.forEach(id=>{
 
-    document
-      .getElementById(id)
-      .classList.remove("active");
+  steps.forEach(
+    id=>{
 
-  });
+      document
+        .getElementById(id)
+        .classList
+        .remove(
+          "active"
+        );
+
+    }
+  );
 
 
   try{
 
     /*
-      Step 1
-    */
+     * STEP 1
+     */
 
     document
-      .getElementById("step1")
-      .classList.add("active");
+      .getElementById(
+        "step1"
+      )
+      .classList
+      .add(
+        "active"
+      );
 
-    await sleep(450);
+
+    await sleep(350);
+
+
+    let contentType =
+      "unknown";
+
+
+    let fileName =
+      "";
+
+
+    let imageData = [];
 
 
     /*
-      判断当前输入类型
-    */
+     * 图片
+     */
 
-    let contentType = "unknown";
+    if(
+      uploadedImages.length
+    ){
 
-    let fileName = "";
+      contentType =
+        "image";
+
+      fileName =
+        uploadedFile?.name ||
+        "";
 
 
-    if(uploadedFile){
+      /*
+       * 真正读取图片
+       */
 
-      if(uploadedFile.type === "url"){
+      imageData =
+        await prepareImages();
 
-        contentType = "video-link";
+    }
 
-        fileName = uploadedFile.name;
+
+    /*
+     * 视频
+     */
+
+    else if(
+      uploadedFile
+    ){
+
+      if(
+        uploadedFile.type ===
+        "url"
+      ){
+
+        contentType =
+          "video-link";
+
+        fileName =
+          uploadedFile.name ||
+          "";
 
       }else{
 
         contentType =
-          uploadedFile.type.startsWith("video/")
+          uploadedFile.type
+            ?.startsWith(
+              "video/"
+            )
             ? "video"
-            : "image";
+            : "unknown";
 
         fileName =
-          uploadedFile.name || "";
+          uploadedFile.name ||
+          "";
 
       }
 
@@ -2379,47 +3778,62 @@ async function startAnalysis(){
 
 
     /*
-      Step 2
-    */
+     * STEP 2
+     */
 
     document
-      .getElementById("step2")
-      .classList.add("active");
+      .getElementById(
+        "step2"
+      )
+      .classList
+      .add(
+        "active"
+      );
 
-    await sleep(450);
+
+    await sleep(300);
 
 
     /*
-      真正调用 Vercel API
-    */
+     * API
+     */
 
     const response =
-      await fetch("/api/analyze",{
+      await fetch(
+        "/api/analyze",
+        {
 
-        method:"POST",
+          method:"POST",
 
-        headers:{
-          "Content-Type":"application/json"
-        },
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
 
-        body:JSON.stringify({
+          body:JSON.stringify({
 
-          intent:intent,
+            intent,
 
-          contentType:contentType,
+            contentType,
 
-          fileName:fileName
+            fileName,
 
-        })
+            imageData
 
-      });
+          })
+
+        }
+      );
 
 
-    let data = null;
+    let data =
+      null;
+
 
     try{
 
-      data = await response.json();
+      data =
+        await response.json();
 
     }catch{
 
@@ -2431,62 +3845,88 @@ async function startAnalysis(){
 
 
     /*
-      API 错误
-    */
+     * API 错误
+     */
 
-    if(!response.ok){
+    if(
+      !response.ok
+    ){
 
       throw new Error(
-
         data?.error ||
         "AI request failed"
-
       );
 
     }
 
 
     /*
-      Step 3
-    */
+     * STEP 3
+     */
 
     document
-      .getElementById("step3")
-      .classList.add("active");
+      .getElementById(
+        "step3"
+      )
+      .classList
+      .add(
+        "active"
+      );
 
-    await sleep(500);
 
-
-    /*
-      保存 AI 结果
-    */
-
-    snipsAIResult = data;
-
-    window.snipsAIResult = data;
+    await sleep(450);
 
 
     /*
-      Step 4
-    */
+     * 保存结果
+     */
+
+    snipsAIResult =
+      data;
+
+
+    window.snipsAIResult =
+      data;
+
+
+    /*
+     * STEP 4
+     */
 
     document
-      .getElementById("step4")
-      .classList.add("active");
+      .getElementById(
+        "step4"
+      )
+      .classList
+      .add(
+        "active"
+      );
 
-    await sleep(500);
+
+    await sleep(450);
 
 
     /*
-      更新页面
-    */
+     * 更新页面
+     */
 
-    updateAIResult(data);
+    updateAIResult(
+      data
+    );
 
 
-    loading.classList.remove("show");
+    /*
+     * Loading 结束
+     */
 
-    results.classList.add("show");
+    loading.classList.remove(
+      "show"
+    );
+
+
+    results.classList.add(
+      "show"
+    );
 
 
     window.scrollTo({
@@ -2506,18 +3946,39 @@ async function startAnalysis(){
     );
 
 
-    loading.classList.remove("show");
+    loading.classList.remove(
+      "show"
+    );
 
-    input.style.display = "";
+
+    input.style.display =
+      "";
+
+
+    console.error(
+      error
+    );
 
 
     toast(
 
       lang === "zh"
 
-        ? "AI 调用失败，请检查 Vercel 配置"
+        ? (
+            "AI 调用失败：" +
+            (
+              error?.message ||
+              "请检查 Vercel 配置"
+            )
+          )
 
-        : "AI request failed. Please check your Vercel setup."
+        : (
+            "AI request failed: " +
+            (
+              error?.message ||
+              "Please check Vercel setup."
+            )
+          )
 
     );
 
@@ -2533,80 +3994,499 @@ async function startAnalysis(){
 function updateAIResult(data){
 
   if(!data){
+
     return;
-  }
-
-
-  /*
-    AI 返回：
-
-    visualDirection
-    subject
-    composition
-    mood
-    strategy
-  */
-
-
-  /*
-    三个方向目前仍保持原来的视觉结构，
-    但内容由 AI 实际生成。
-
-    Direction 1 = 情绪
-    Direction 2 = 聚焦
-    Direction 3 = 好奇心
-  */
-
-  const whyTexts =
-    document.querySelectorAll(".direction .why-text");
-
-
-  if(
-    data.visualDirection &&
-    whyTexts[0]
-  ){
-
-    whyTexts[0].textContent =
-      data.visualDirection;
-
-  }
-
-
-  if(
-    data.subject &&
-    whyTexts[1]
-  ){
-
-    whyTexts[1].textContent =
-      data.subject;
-
-  }
-
-
-  if(
-    data.composition &&
-    whyTexts[2]
-  ){
-
-    whyTexts[2].textContent =
-      data.composition;
 
   }
 
 
   /*
-    保存 AI 的核心策略，
-    Reveal 时使用。
-  */
+   * ========================================
+   * 1. REAL SNIPS
+   * ========================================
+   */
 
-  window.snipsStrategy =
-    data.strategy || "";
+  const snips =
+    Array.isArray(
+      data.snips
+    )
+      ? data.snips
+      : [];
+
+
+  const snipCards =
+    document.querySelectorAll(
+      ".snip"
+    );
+
+
+  snips
+    .slice(0,5)
+    .forEach(
+      (snip,index)=>{
+
+        const card =
+          snipCards[index];
+
+
+        if(!card){
+
+          return;
+
+        }
+
+
+        const label =
+          card.querySelector(
+            ".snip-label"
+          );
+
+
+        const reason =
+          card.querySelector(
+            ".snip-reason"
+          );
+
+
+        if(label){
+
+          label.textContent =
+            snip.label ||
+            "";
+
+        }
+
+
+        if(reason){
+
+          reason.textContent =
+            snip.reason ||
+            "";
+
+        }
+
+
+        card.dataset.importance =
+          snip.importance ??
+          "";
+
+      }
+    );
+
+
+  /*
+   * 更新数量
+   */
+
+  const count =
+    document.getElementById(
+      "snipCount"
+    );
+
+
+  if(count){
+
+    count.textContent =
+      Math.min(
+        snips.length,
+        5
+      ) || 5;
+
+  }
+
+
+  /*
+   * ========================================
+   * 2. REAL DIRECTIONS
+   * ========================================
+   */
+
+  const directions =
+    Array.isArray(
+      data.directions
+    )
+      ? data.directions
+      : [];
+
+
+  window.snipsDirections =
+    directions;
+
+
+  const directionCards =
+    document.querySelectorAll(
+      ".direction"
+    );
+
+
+  directions
+    .slice(0,3)
+    .forEach(
+      (direction,index)=>{
+
+        const card =
+          directionCards[index];
+
+
+        if(!card){
+
+          return;
+
+        }
+
+
+        /*
+         * 保存完整方向
+         */
+
+        card.dataset.aiDirection =
+          JSON.stringify(
+            direction
+          );
+
+
+        /*
+         * 名称
+         */
+
+        const name =
+          card.querySelector(
+            ".direction-name"
+          );
+
+
+        if(name){
+
+          name.textContent =
+            direction.name ||
+            "";
+
+        }
+
+
+        /*
+         * 中文名称
+         */
+
+        const cn =
+          card.querySelector(
+            ".direction-cn"
+          );
+
+
+        if(cn){
+
+          cn.textContent =
+            direction.cn ||
+            "";
+
+        }
+
+
+        /*
+         * 为什么
+         */
+
+        const why =
+          card.querySelector(
+            ".why-text"
+          );
+
+
+        if(why){
+
+          why.textContent =
+            direction.why ||
+            direction.visualDirection ||
+            "";
+
+        }
+
+      }
+    );
+
+
+  /*
+   * ========================================
+   * 3. REAL IMAGE → RESULT PREVIEWS
+   * ========================================
+   */
+
+  if(
+    uploadedImageData.length
+  ){
+
+    applyRealImageToSnips();
+
+    applyRealImageToDirections();
+
+  }
 
 }
 
 
 /* =========================================================
-   REVEAL
+   APPLY REAL IMAGE TO SNIPS
+========================================================= */
+
+function applyRealImageToSnips(){
+
+  if(
+    !uploadedImageData.length
+  ){
+
+    return;
+
+  }
+
+
+  const snips =
+    document.querySelectorAll(
+      ".snip"
+    );
+
+
+  const positions = [
+
+    "50% 50%",
+
+    "35% 45%",
+
+    "65% 40%",
+
+    "45% 65%",
+
+    "70% 65%"
+
+  ];
+
+
+  snips.forEach(
+    (card,index)=>{
+
+      const mock =
+        card.querySelector(
+          ".mock-image"
+        );
+
+
+      if(!mock){
+
+        return;
+
+      }
+
+
+      const existing =
+        mock.querySelector(
+          ".ai-snip-image"
+        );
+
+
+      if(existing){
+
+        existing.remove();
+
+      }
+
+
+      const img =
+        document.createElement(
+          "img"
+        );
+
+
+      /*
+       * 多图时循环使用图片
+       */
+
+      img.src =
+        uploadedImageData[
+          index %
+          uploadedImageData.length
+        ];
+
+
+      img.className =
+        "ai-snip-image";
+
+
+      img.style.position =
+        "absolute";
+
+      img.style.inset =
+        "0";
+
+      img.style.width =
+        "100%";
+
+      img.style.height =
+        "100%";
+
+      img.style.objectFit =
+        "cover";
+
+      img.style.objectPosition =
+        positions[index] ||
+        "50% 50%";
+
+
+      img.style.display =
+        "block";
+
+
+      mock
+        .insertBefore(
+          img,
+          mock.firstChild
+        );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   APPLY REAL IMAGE TO DIRECTIONS
+========================================================= */
+
+function applyRealImageToDirections(){
+
+  if(
+    !uploadedImageData.length
+  ){
+
+    return;
+
+  }
+
+
+  const cards =
+    document.querySelectorAll(
+      ".direction"
+    );
+
+
+  cards.forEach(
+    (card,index)=>{
+
+      const preview =
+        card.querySelector(
+          ".direction-preview"
+        );
+
+
+      if(!preview){
+
+        return;
+
+      }
+
+
+      const mock =
+        preview.querySelector(
+          ".mock-image"
+        );
+
+
+      if(!mock){
+
+        return;
+
+      }
+
+
+      const existing =
+        mock.querySelector(
+          ".ai-direction-image"
+        );
+
+
+      if(existing){
+
+        existing.remove();
+
+      }
+
+
+      const img =
+        document.createElement(
+          "img"
+        );
+
+
+      img.src =
+        uploadedImageData[
+          index %
+          uploadedImageData.length
+        ];
+
+
+      img.className =
+        "ai-direction-image";
+
+
+      img.style.position =
+        "absolute";
+
+      img.style.inset =
+        "0";
+
+      img.style.width =
+        "100%";
+
+      img.style.height =
+        "100%";
+
+      img.style.objectFit =
+        "cover";
+
+
+      /*
+       * 三个方向采用不同视觉裁切
+       */
+
+      if(index === 0){
+
+        img.style.objectPosition =
+          "50% 35%";
+
+      }
+
+      if(index === 1){
+
+        img.style.objectPosition =
+          "50% 50%";
+
+      }
+
+      if(index === 2){
+
+        img.style.objectPosition =
+          "65% 45%";
+
+      }
+
+
+      img.style.display =
+        "block";
+
+
+      mock
+        .insertBefore(
+          img,
+          mock.firstChild
+        );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   DIRECTION FALLBACK
 ========================================================= */
 
 const directionData = {
@@ -2707,150 +4587,196 @@ const directionData = {
 
 
 /* =========================================================
-   REVEAL DIRECTION
+   REVEAL
 ========================================================= */
 
 function revealDirection(type){
 
-  currentDirection = type;
+  currentDirection =
+    type;
 
-  const data =
+
+  /*
+   * 优先使用 AI 真实方向
+   */
+
+  const aiDirection =
+    getAIDirection(
+      type
+    );
+
+
+  const fallback =
     directionData[type];
 
 
+  const data =
+    aiDirection ||
+    fallback;
+
+
+  const tag =
+    aiDirection?.type ||
+    fallback.tag;
+
+
+  const name =
+    aiDirection?.name ||
+    fallback.name[lang];
+
+
+  const reason =
+    aiDirection?.why ||
+    aiDirection?.visualDirection ||
+    fallback.reason[lang];
+
+
   document
-    .getElementById("revealTag")
+    .getElementById(
+      "revealTag"
+    )
     .textContent =
-      data.tag;
+      tag;
 
 
   document
-    .getElementById("revealName")
+    .getElementById(
+      "revealName"
+    )
     .textContent =
-      data.name[lang];
-
-
-  /*
-    如果 AI 有策略，
-    Reveal 优先显示 AI 策略。
-  */
-
-  let reason =
-    data.reason[lang];
-
-
-  if(
-    snipsAIResult &&
-    snipsAIResult.strategy
-  ){
-
-    reason =
-      snipsAIResult.strategy;
-
-  }
-
-
-  /*
-    针对不同方向补充 AI 信息
-  */
-
-  if(
-    snipsAIResult &&
-    type === "emotion" &&
-    snipsAIResult.visualDirection
-  ){
-
-    reason =
-      snipsAIResult.visualDirection;
-
-  }
-
-
-  if(
-    snipsAIResult &&
-    type === "focus" &&
-    snipsAIResult.subject
-  ){
-
-    reason =
-      snipsAIResult.subject;
-
-  }
-
-
-  if(
-    snipsAIResult &&
-    type === "curiosity" &&
-    snipsAIResult.composition
-  ){
-
-    reason =
-      snipsAIResult.composition;
-
-  }
+      name;
 
 
   document
-    .getElementById("revealReason")
+    .getElementById(
+      "revealReason"
+    )
     .textContent =
       reason;
 
 
   /*
-    AI 没有生成标题时，
-    继续使用原来的标题。
-  */
+   * 标题
+   */
 
-  const title =
-    data.title[lang];
+  let title =
+    fallback.title[lang];
+
+
+  if(
+    aiDirection?.strategy
+  ){
+
+    if(
+      type === "emotion"
+    ){
+
+      title =
+        lang === "zh"
+          ? "先让人感受到。"
+          : "FEEL IT FIRST.";
+
+    }
+
+
+    if(
+      type === "focus"
+    ){
+
+      title =
+        lang === "zh"
+          ? "只看这里。"
+          : "LOOK CLOSER.";
+
+    }
+
+
+    if(
+      type === "curiosity"
+    ){
+
+      title =
+        lang === "zh"
+          ? "然后发生了什么？"
+          : "WHAT HAPPENS NEXT?";
+
+    }
+
+  }
 
 
   document
-    .getElementById("revealOverlay")
+    .getElementById(
+      "revealOverlay"
+    )
     .innerHTML =
       title.replace(
-        " ",
+        /\n/g,
         "<br>"
       );
 
 
   /*
-    保持原来的视觉效果
-  */
+   * 真正图片
+   */
 
-  const visual =
+  const revealImage =
+    document.getElementById(
+      "revealImage"
+    );
+
+
+  const mock =
     document.querySelector(
       "#revealVisual .mock-image"
     );
 
 
-  if(type === "emotion"){
+  if(
+    uploadedImageData.length
+  ){
 
-    visual.style.background =
-      "linear-gradient(145deg,#222 0 25%,#999 26% 60%,#ddd 61%)";
-
-  }
-
-
-  if(type === "focus"){
-
-    visual.style.background =
-      "linear-gradient(145deg,#e8e8e3 0 35%,#171717 36% 75%,#777 76%)";
-
-  }
+    revealImage.src =
+      uploadedImageData[0];
 
 
-  if(type === "curiosity"){
+    revealImage.classList.add(
+      "show"
+    );
 
-    visual.style.background =
-      "linear-gradient(145deg,#111 0 42%,#666 43% 65%,#e8e8e3 66%)";
+
+    if(mock){
+
+      mock.style.display =
+        "none";
+
+    }
+
+  }else{
+
+    revealImage.classList.remove(
+      "show"
+    );
+
+
+    if(mock){
+
+      mock.style.display =
+        "";
+
+    }
 
   }
 
 
   document
-    .getElementById("revealLayer")
-    .classList.add("show");
+    .getElementById(
+      "revealLayer"
+    )
+    .classList
+    .add(
+      "show"
+    );
 
 
   document.body.style.overflow =
@@ -2859,11 +4785,66 @@ function revealDirection(type){
 }
 
 
+/* =========================================================
+   GET AI DIRECTION
+========================================================= */
+
+function getAIDirection(type){
+
+  if(
+    !snipsAIResult ||
+    !Array.isArray(
+      snipsAIResult.directions
+    )
+  ){
+
+    return null;
+
+  }
+
+
+  const typeMap = {
+
+    emotion:"EMOTION",
+
+    focus:"FOCUS",
+
+    curiosity:"CURIOSITY"
+
+  };
+
+
+  const target =
+    typeMap[type];
+
+
+  return (
+    snipsAIResult.directions
+      .find(
+        item =>
+          item.type ===
+          target
+      )
+  ) || null;
+
+}
+
+
+/* =========================================================
+   CLOSE REVEAL
+========================================================= */
+
 function closeReveal(){
 
   document
-    .getElementById("revealLayer")
-    .classList.remove("show");
+    .getElementById(
+      "revealLayer"
+    )
+    .classList
+    .remove(
+      "show"
+    );
+
 
   document.body.style.overflow =
     "";
@@ -2879,57 +4860,99 @@ function keepDirection(){
 
   closeReveal();
 
-  const studio =
-    document.getElementById("coverStudio");
 
-  studio.classList.add("show");
+  const studio =
+    document.getElementById(
+      "coverStudio"
+    );
+
+
+  studio.classList.add(
+    "show"
+  );
 
 
   /*
-    根据 AI 结果，
-    自动给 Cover Studio 一个更合理的标题。
-  */
+   * 根据方向生成默认标题
+   */
 
-  if(snipsAIResult){
+  const titleInput =
+    document.getElementById(
+      "titleInput"
+    );
 
-    const titleInput =
-      document.getElementById("titleInput");
+
+  titleInput.value =
+
+    currentDirection ===
+    "emotion"
+
+      ? "FEEL IT FIRST"
+
+      : currentDirection ===
+        "focus"
+
+        ? "LOOK CLOSER"
+
+        : "WHAT HAPPENS NEXT";
 
 
-    if(
-      snipsAIResult.visualDirection
-    ){
+  updateCoverText();
 
-      /*
-        这里只改变内部默认标题，
-        不改变 UI。
-      */
 
-      titleInput.value =
-        currentDirection === "emotion"
-          ? "FEEL IT FIRST"
-          : currentDirection === "focus"
-            ? "LOOK CLOSER"
-            : "WHAT HAPPENS NEXT";
+  /*
+   * 真正图片进入 Cover Studio
+   */
 
-      updateCoverText();
+  if(
+    uploadedImageData.length
+  ){
+
+    const image =
+      document.getElementById(
+        "coverFinalImage"
+      );
+
+
+    image.src =
+      uploadedImageData[0];
+
+
+    image.classList.add(
+      "show"
+    );
+
+
+    const mockSubject =
+      document.querySelector(
+        ".cover-final .mock-subject"
+      );
+
+
+    if(mockSubject){
+
+      mockSubject.style.display =
+        "none";
 
     }
 
   }
 
 
-  setTimeout(()=>{
+  setTimeout(
+    ()=>{
 
-    studio.scrollIntoView({
+      studio.scrollIntoView({
 
-      behavior:"smooth",
+        behavior:"smooth",
 
-      block:"start"
+        block:"start"
 
-    });
+      });
 
-  },100);
+    },
+    100
+  );
 
 
   toast(
@@ -2951,21 +4974,41 @@ function refineDirection(){
 
   closeReveal();
 
+
   const input =
-    document.getElementById("intentInput");
+    document.getElementById(
+      "intentInput"
+    );
 
 
   input.value =
+
     lang === "zh"
+
       ? "保留这个方向，但让视觉更有冲击力"
+
       : "Keep this direction, but make it more striking.";
 
 
-  input.closest(".intent").scrollIntoView({
+  input.closest(
+    ".intent"
+  ).scrollIntoView({
 
     behavior:"smooth"
 
   });
+
+
+  /*
+   * 显示输入区
+   */
+
+  document
+    .getElementById(
+      "inputArea"
+    )
+    .style.display =
+      "";
 
 
   toast(
@@ -2979,22 +5022,64 @@ function refineDirection(){
 }
 
 
-/* ---------------- Cover Studio ---------------- */
+/* =========================================================
+   COVER STUDIO
+========================================================= */
 
 function updateCoverText(){
 
   const value =
     document
-      .getElementById("titleInput")
+      .getElementById(
+        "titleInput"
+      )
       .value
       .trim();
 
 
-  document
-    .getElementById("coverText")
-    .childNodes[0]
-    .nodeValue =
-      value + "\n";
+  const coverText =
+    document.getElementById(
+      "coverText"
+    );
+
+
+  /*
+   * 保留 small
+   */
+
+  const small =
+    coverText.querySelector(
+      "small"
+    );
+
+
+  coverText.childNodes.forEach(
+    node=>{
+
+      if(
+        node.nodeType ===
+        Node.TEXT_NODE
+      ){
+
+        node.nodeValue =
+          "";
+
+      }
+
+    }
+  );
+
+
+  const textNode =
+    document.createTextNode(
+      value + "\n"
+    );
+
+
+  coverText.insertBefore(
+    textNode,
+    small
+  );
 
 }
 
@@ -3003,7 +5088,9 @@ function updateScale(){
 
   const value =
     document
-      .getElementById("scaleRange")
+      .getElementById(
+        "scaleRange"
+      )
       .value;
 
 
@@ -3013,8 +5100,12 @@ function updateScale(){
     );
 
 
-  subject.style.transform =
-    `scale(${value/100})`;
+  if(subject){
+
+    subject.style.transform =
+      `scale(${value/100})`;
+
+  }
 
 }
 
@@ -3023,7 +5114,9 @@ function updatePosition(){
 
   const value =
     document
-      .getElementById("positionRange")
+      .getElementById(
+        "positionRange"
+      )
       .value;
 
 
@@ -3033,11 +5126,19 @@ function updatePosition(){
     );
 
 
-  subject.style.left =
-    `calc(34% + ${value}px)`;
+  if(subject){
+
+    subject.style.left =
+      `calc(34% + ${value}px)`;
+
+  }
 
 }
 
+
+/* =========================================================
+   EXPORT
+========================================================= */
 
 function fakeExport(){
 
@@ -3052,75 +5153,219 @@ function fakeExport(){
 }
 
 
-/* ---------------- Restart ---------------- */
+/* =========================================================
+   RESTART
+========================================================= */
 
 function restart(){
 
   document
-    .getElementById("results")
-    .classList.remove("show");
+    .getElementById(
+      "results"
+    )
+    .classList
+    .remove(
+      "show"
+    );
 
 
   document
-    .getElementById("coverStudio")
-    .classList.remove("show");
+    .getElementById(
+      "coverStudio"
+    )
+    .classList
+    .remove(
+      "show"
+    );
 
 
   document
-    .getElementById("inputArea")
-    .style.display = "";
+    .getElementById(
+      "inputArea"
+    )
+    .style
+    .display =
+      "";
 
 
   document
-    .getElementById("loadingScreen")
-    .classList.remove("show");
+    .getElementById(
+      "loadingScreen"
+    )
+    .classList
+    .remove(
+      "show"
+    );
 
 
   /*
-    清除 AI 状态
-  */
+   * 清除 AI
+   */
 
-  snipsAIResult = null;
-
-  window.snipsAIResult = null;
-
-  window.snipsStrategy = null;
-
-  currentDirection = null;
+  snipsAIResult =
+    null;
 
 
-  /*
-    清空文件状态
-  */
-
-  uploadedFile = null;
+  window.snipsAIResult =
+    null;
 
 
-  document
-    .getElementById("videoInput")
-    .value = "";
-
-  document
-    .getElementById("imageInput")
-    .value = "";
+  window.snipsDirections =
+    null;
 
 
-  document
-    .getElementById("intentInput")
-    .value = "";
+  currentDirection =
+    null;
 
 
   /*
-    恢复默认标题
-  */
+   * 清除文件
+   */
+
+  uploadedFile =
+    null;
+
+
+  uploadedImages =
+    [];
+
+
+  uploadedImageData =
+    [];
+
 
   document
-    .getElementById("titleInput")
+    .getElementById(
+      "videoInput"
+    )
+    .value =
+      "";
+
+
+  document
+    .getElementById(
+      "imageInput"
+    )
+    .value =
+      "";
+
+
+  /*
+   * 清除预览
+   */
+
+  const preview =
+    document.getElementById(
+      "uploadPreview"
+    );
+
+
+  preview.classList.remove(
+    "show"
+  );
+
+
+  document
+    .getElementById(
+      "uploadPreviewGrid"
+    )
+    .innerHTML =
+      "";
+
+
+  /*
+   * 恢复输入
+   */
+
+  document
+    .getElementById(
+      "intentInput"
+    )
+    .value =
+      "";
+
+
+  /*
+   * 恢复标题
+   */
+
+  document
+    .getElementById(
+      "titleInput"
+    )
     .value =
       "THIS CHANGES EVERYTHING";
 
 
   updateCoverText();
+
+
+  /*
+   * 清除 Cover 图片
+   */
+
+  const coverImage =
+    document.getElementById(
+      "coverFinalImage"
+    );
+
+
+  coverImage.removeAttribute(
+    "src"
+  );
+
+
+  coverImage.classList.remove(
+    "show"
+  );
+
+
+  const mockSubject =
+    document.querySelector(
+      ".cover-final .mock-subject"
+    );
+
+
+  if(mockSubject){
+
+    mockSubject.style.display =
+      "";
+
+  }
+
+
+  /*
+   * 恢复 Snips mock
+   */
+
+  document
+    .querySelectorAll(
+      ".ai-snip-image"
+    )
+    .forEach(
+      el=>el.remove()
+    );
+
+
+  document
+    .querySelectorAll(
+      ".ai-direction-image"
+    )
+    .forEach(
+      el=>el.remove()
+    );
+
+
+  document
+    .querySelectorAll(
+      ".snip-reason"
+    )
+    .forEach(
+      el=>{
+        el.textContent =
+          "";
+      }
+    );
 
 
   window.scrollTo({
@@ -3134,7 +5379,9 @@ function restart(){
 }
 
 
-/* ---------------- Toast ---------------- */
+/* =========================================================
+   TOAST
+========================================================= */
 
 let toastTimer;
 
@@ -3142,30 +5389,43 @@ let toastTimer;
 function toast(message){
 
   const el =
-    document.getElementById("toast");
+    document.getElementById(
+      "toast"
+    );
 
 
   el.textContent =
     message;
 
 
-  el.classList.add("show");
+  el.classList.add(
+    "show"
+  );
 
 
-  clearTimeout(toastTimer);
+  clearTimeout(
+    toastTimer
+  );
 
 
   toastTimer =
-    setTimeout(()=>{
+    setTimeout(
+      ()=>{
 
-      el.classList.remove("show");
+        el.classList.remove(
+          "show"
+        );
 
-    },2200);
+      },
+      3200
+    );
 
 }
 
 
-/* ---------------- Init ---------------- */
+/* =========================================================
+   INIT
+========================================================= */
 
 setLang(lang);
 
