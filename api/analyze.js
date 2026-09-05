@@ -14,99 +14,183 @@ export default async function handler(req, res) {
 
   try {
 
-    const {
-      intent,
-      contentType = "unknown",
-      fileName = "",
-      imageData = ""
-    } = req.body || {};
+    const body = req.body || {};
 
-    if (!intent || !intent.trim()) {
+    const intent =
+      typeof body.intent === "string"
+        ? body.intent.trim()
+        : "";
+
+    const contentType =
+      body.contentType || "unknown";
+
+    const fileName =
+      body.fileName || "";
+
+    /*
+     * 兼容两种前端传参方式：
+     *
+     * imageData: "data:image/..."
+     *
+     * images: [
+     *   "data:image/..."
+     * ]
+     */
+
+    let images = [];
+
+    if (
+      Array.isArray(body.images)
+    ) {
+      images = body.images.filter(
+        item =>
+          typeof item === "string" &&
+          item.startsWith("data:image/")
+      );
+    }
+
+    if (
+      images.length === 0 &&
+      typeof body.imageData === "string" &&
+      body.imageData.startsWith("data:image/")
+    ) {
+      images = [body.imageData];
+    }
+
+    if (!intent) {
       return res.status(400).json({
         error: "请输入你希望封面呈现的感觉"
       });
     }
 
+    if (images.length === 0) {
+      return res.status(400).json({
+        error: "没有收到图片，请重新上传图片后再测试"
+      });
+    }
+
     /*
-     * 图片模式：
-     * 前端把图片转换成 Base64 Data URL，
-     * 这里直接交给 Vision 模型分析。
+     * 防止一次传入过多图片
      */
 
-    const hasImage =
-      typeof imageData === "string" &&
-      imageData.startsWith("data:image/");
+    images = images.slice(0, 5);
+
+    /*
+     * 防止异常大的请求
+     */
+
+    const totalImageSize = images.reduce(
+      (total, image) => total + image.length,
+      0
+    );
+
+    if (totalImageSize > 20 * 1024 * 1024) {
+      return res.status(413).json({
+        error: "图片数据过大，请使用较小的图片"
+      });
+    }
 
     const systemPrompt = `
 You are Snips.
 
 Snips is an AI creative director specialized in high-click video covers.
 
-Your job is to look at the user's actual visual content,
-identify the strongest visual opportunities,
-and turn them into practical cover strategies.
+Your job is to analyze the ACTUAL IMAGE provided by the user.
 
-IMPORTANT:
+You must visually inspect the image before generating your answer.
 
-If an image is provided, you MUST actually analyze the image.
+Never invent:
+- people
+- objects
+- expressions
+- colors
+- actions
+- environments
+- composition
+- text
+- visual details
 
-Never invent objects, people, expressions, colors, composition,
-or visual details that are not visible in the image.
+Everything you describe must be grounded in what is actually visible.
 
-The user's requested feeling is:
+USER INTENT:
 
 ${intent}
 
-Content type:
+CONTENT TYPE:
 
 ${contentType}
 
-File name:
+FILE NAME:
 
 ${fileName || "未提供"}
 
-Your analysis has TWO layers.
+---
 
 LAYER 1 — SNIPS
 
-Find exactly 5 visually meaningful "Snips".
+Find exactly 5 visually meaningful Snips.
 
-A Snip is NOT simply an object in the image.
+A Snip is NOT simply an object.
 
-A Snip can be:
+A Snip may be:
 
-- a face or expression
-- a body/action
-- a distinctive object
-- a strong visual detail
-- a contrast
-- a composition
+- a face
+- facial expression
+- body/action
+- distinctive object
+- strong visual detail
+- contrast
+- composition
 - negative space
-- a gaze direction
-- a color relationship
-- a visual tension
-- a moment that could become a strong cover
+- gaze direction
+- color relationship
+- visual tension
+- unusual visual element
+- visually dominant area
+- potentially clickable moment
 
-Each Snip must explain WHY it matters for a clickable cover.
+Each Snip must explain why it is useful for creating a video cover.
+
+IMPORTANT:
+
+Rank Snips by actual visual importance.
+
+importance must be between 0 and 1.
+
+---
 
 LAYER 2 — COVER DIRECTIONS
 
 Create exactly 3 genuinely different cover directions.
 
-The three directions MUST use different creative mechanisms.
+They MUST use different creative mechanisms.
 
 Direction 1:
-Emotion / emotional impact
+
+EMOTION
+
+Focus on emotional impact.
 
 Direction 2:
-Focus / visual dominance
+
+FOCUS
+
+Focus on visual dominance and immediate recognition.
 
 Direction 3:
-Curiosity / information gap
 
-Do NOT simply rewrite the same idea three times.
+CURIOSITY
 
-Each direction must be actionable for a cover designer.
+Focus on information gaps, unanswered questions,
+or visual tension.
+
+The three directions must NOT be simple rewrites of each other.
+
+Each direction must be practical for a professional cover designer.
+
+---
+
+OUTPUT
 
 Return JSON ONLY.
 
@@ -177,9 +261,9 @@ Use exactly this structure:
   ]
 }
 
-Rules:
+RULES:
 
-1. Answer in Chinese except the fixed English direction names.
+1. Answer in Chinese except fixed English direction names.
 2. Be concise.
 3. Every Snip must be grounded in the actual image.
 4. Every Snip must be useful for cover creation.
@@ -187,40 +271,59 @@ Rules:
 6. Do not use generic marketing language.
 7. Focus on visual hierarchy.
 8. Focus on clickability.
-9. Focus on subject recognition at small size.
+9. Focus on recognition at small size.
 10. Focus on curiosity.
-11. The three directions must feel visibly different.
+11. The three directions must be visibly different.
 12. importance must be a number between 0 and 1.
+13. Return valid JSON only.
 `;
 
-    let inputContent = [
+    /*
+     * 创建 Vision 输入
+     */
+
+    const userContent = [
       {
         type: "input_text",
         text: `
-请分析这张图片，并根据用户的要求生成 Snips 和三个封面方向。
+请分析我提供的实际图片。
 
-用户要求：
+用户希望封面呈现：
 
 ${intent}
+
+请先观察图片，再生成：
+
+1. 5 个 Snips
+2. 3 个不同的封面创意方向
+
+不要假设图片中不存在的内容。
         `
       }
     ];
 
     /*
-     * 只有真正收到图片时才加入 image input。
+     * 添加图片
      */
 
-    if (hasImage) {
+    for (const image of images) {
 
-      inputContent.push({
+      userContent.push({
         type: "input_image",
-        image_url: imageData
+        image_url: image
       });
 
     }
 
-    const response = await client.responses.create({
+    console.log(
+      `[Snips AI] Starting analysis. images=${images.length}`
+    );
 
+    /*
+     * 调用 OpenAI Responses API
+     */
+
+    const response = await client.responses.create({
       model: "gpt-5.6-luna",
 
       input: [
@@ -235,13 +338,37 @@ ${intent}
         },
         {
           role: "user",
-          content: inputContent
+          content: userContent
         }
-      ]
+      ],
 
+      /*
+       * 强制 AI 更快返回
+       */
+
+      reasoning: {
+        effort: "low"
+      }
     });
 
-    const text = response.output_text;
+    console.log(
+      "[Snips AI] OpenAI response received"
+    );
+
+    const text =
+      typeof response.output_text === "string"
+        ? response.output_text.trim()
+        : "";
+
+    if (!text) {
+      return res.status(500).json({
+        error: "AI 没有返回内容"
+      });
+    }
+
+    /*
+     * 尝试解析 JSON
+     */
 
     let result;
 
@@ -252,47 +379,151 @@ ${intent}
     } catch (parseError) {
 
       console.error(
-        "JSON parse error:",
-        parseError,
+        "[Snips AI] JSON parse error:",
+        parseError
+      );
+
+      console.error(
+        "[Snips AI] Raw output:",
         text
       );
 
+      /*
+       * 有些情况下模型会返回：
+
+       ```json
+       {...}
+       ```
+
+       尝试自动清理 Markdown
+       */
+
+      try {
+
+        const cleaned =
+          text
+            .replace(/^```json\s*/i, "")
+            .replace(/^```\s*/i, "")
+            .replace(/\s*```$/i, "")
+            .trim();
+
+        result = JSON.parse(cleaned);
+
+      } catch (secondError) {
+
+        return res.status(500).json({
+          error: "AI 返回的数据格式异常",
+          raw: text.slice(0, 2000)
+        });
+
+      }
+    }
+
+    /*
+     * 数据结构验证
+     */
+
+    if (!Array.isArray(result.snips)) {
+
       return res.status(500).json({
-        error: "AI 返回的数据格式异常"
+        error: "AI 返回结果缺少 snips"
+      });
+
+    }
+
+    if (!Array.isArray(result.directions)) {
+
+      return res.status(500).json({
+        error: "AI 返回结果缺少 directions"
       });
 
     }
 
     /*
-     * 基础数据保护
+     * 保证前端不会收到异常数量
      */
 
-    if (
-      !Array.isArray(result.snips) ||
-      !Array.isArray(result.directions)
-    ) {
+    result.snips =
+      result.snips
+        .slice(0, 5)
+        .map((snip, index) => ({
+          label:
+            typeof snip.label === "string"
+              ? snip.label
+              : `Snip ${index + 1}`,
 
-      return res.status(500).json({
-        error: "AI 返回的数据结构不完整"
-      });
+          reason:
+            typeof snip.reason === "string"
+              ? snip.reason
+              : "",
 
-    }
+          importance:
+            typeof snip.importance === "number"
+              ? Math.max(
+                  0,
+                  Math.min(1, snip.importance)
+                )
+              : 0
+        }));
 
-    return res.status(200).json(result);
+    result.directions =
+      result.directions
+        .slice(0, 3)
+        .map(direction => ({
+          type:
+            direction.type || "",
+
+          name:
+            direction.name || "",
+
+          cn:
+            direction.cn || "",
+
+          why:
+            direction.why || "",
+
+          visualDirection:
+            direction.visualDirection || "",
+
+          subject:
+            direction.subject || "",
+
+          composition:
+            direction.composition || "",
+
+          mood:
+            direction.mood || "",
+
+          strategy:
+            direction.strategy || ""
+        }));
+
+    console.log(
+      `[Snips AI] Success. snips=${result.snips.length}, directions=${result.directions.length}`
+    );
+
+    return res.status(200).json({
+      success: true,
+      model: "gpt-5.6-luna",
+      imageCount: images.length,
+      result
+    });
 
   } catch (error) {
 
     console.error(
-      "OpenAI API Error:",
+      "[Snips AI] OpenAI API Error:",
       error
     );
 
-    return res.status(500).json({
+    const status =
+      error?.status ||
+      500;
+
+    return res.status(status).json({
       error:
         error?.message ||
         "AI 调用失败，请检查 OpenAI API 配置"
     });
-
   }
-
 }
