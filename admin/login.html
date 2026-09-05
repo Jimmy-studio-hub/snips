@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Snips Admin — Sign in</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #f6f6f3;
+      color: #111;
+      font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login {
+      width: 100%;
+      max-width: 390px;
+      padding: 24px;
+    }
+
+    .brand {
+      margin-bottom: 38px;
+    }
+
+    .logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: #111;
+      color: white;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 18px;
+      font-weight: 700;
+
+      margin-bottom: 18px;
+    }
+
+    .brand-name {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.1;
+      letter-spacing: -.04em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: #777;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .form {
+      margin-top: 30px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      height: 48px;
+
+      border: 1px solid #ddd;
+      border-radius: 10px;
+
+      padding: 0 14px;
+
+      font-size: 14px;
+      outline: none;
+
+      background: white;
+    }
+
+    input:focus {
+      border-color: #111;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    button {
+      width: 100%;
+      height: 48px;
+
+      border: 0;
+      border-radius: 10px;
+
+      background: #111;
+      color: white;
+
+      font-size: 14px;
+      font-weight: 600;
+
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: .9;
+    }
+
+    button:disabled {
+      opacity: .5;
+      cursor: wait;
+    }
+
+    .error {
+      display: none;
+
+      margin-top: 16px;
+      padding: 12px 14px;
+
+      border-radius: 9px;
+
+      background: #fff0f0;
+      color: #c62828;
+
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .footer {
+      margin-top: 28px;
+
+      color: #999;
+      font-size: 11px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="login">
+
+    <div class="brand">
+
+      <div class="logo">
+        S
+      </div>
+
+      <div class="brand-name">
+        Snips Admin
+      </div>
+
+    </div>
+
+    <h1>Sign in</h1>
+
+    <p class="subtitle">
+      Access the Snips AI control center.
+    </p>
+
+    <form
+      class="form"
+      id="loginForm"
+    >
+
+      <div class="field">
+
+        <label for="email">
+          Email
+        </label>
+
+        <input
+          id="email"
+          type="email"
+          placeholder="admin@example.com"
+          autocomplete="email"
+          required
+        />
+
+      </div>
+
+      <div class="field">
+
+        <label for="password">
+          Password
+        </label>
+
+        <input
+          id="password"
+          type="password"
+          placeholder="••••••••"
+          autocomplete="current-password"
+          required
+        />
+
+      </div>
+
+      <button
+        id="loginButton"
+        type="submit"
+      >
+        Sign in
+      </button>
+
+      <div
+        class="error"
+        id="errorMessage"
+      ></div>
+
+    </form>
+
+    <div class="footer">
+      Snips · AI Cover Studio
+    </div>
+
+  </main>
+
+  <script>
+
+    /*
+      ==============================
+      Supabase configuration
+      ==============================
+    */
+
+    const SUPABASE_URL =
+      "https://xmfoffunrnsaadpfsoqa.supabase.co";
+
+    const SUPABASE_ANON_KEY =
+      "YOUR_SUPABASE_PUBLISHABLE_KEY";
+
+
+    const {
+      createClient
+    } = supabase;
+
+
+    const supabaseClient =
+      createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+      );
+
+
+    /*
+      ==============================
+      Check existing session
+      ==============================
+    */
+
+    async function checkSession() {
+
+      const {
+        data
+      } = await supabaseClient.auth.getSession();
+
+      if (data.session) {
+
+        window.location.href =
+          "/admin/";
+
+      }
+
+    }
+
+
+    checkSession();
+
+
+    /*
+      ==============================
+      Login
+      ==============================
+    */
+
+    const form =
+      document.getElementById("loginForm");
+
+    const button =
+      document.getElementById("loginButton");
+
+    const errorMessage =
+      document.getElementById("errorMessage");
+
+
+    form.addEventListener(
+      "submit",
+      async function(event) {
+
+        event.preventDefault();
+
+        errorMessage.style.display =
+          "none";
+
+        button.disabled = true;
+
+        button.textContent =
+          "Signing in...";
+
+
+        const email =
+          document
+            .getElementById("email")
+            .value
+            .trim();
+
+        const password =
+          document
+            .getElementById("password")
+            .value;
+
+
+        const {
+          error
+        } =
+          await supabaseClient.auth
+            .signInWithPassword({
+              email,
+              password
+            });
+
+
+        if (error) {
+
+          errorMessage.textContent =
+            error.message ||
+            "Sign in failed.";
+
+          errorMessage.style.display =
+            "block";
+
+          button.disabled = false;
+
+          button.textContent =
+            "Sign in";
+
+          return;
+
+        }
+
+
+        window.location.href =
+          "/admin/";
+
+      }
+    );
+
+  </script>
+
+</body>
+</html>
