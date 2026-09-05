@@ -6,7 +6,6 @@ const client = new OpenAI({
 
 export default async function handler(req, res) {
 
-  // 只允许 POST
   if (req.method !== "POST") {
     return res.status(405).json({
       error: "Method not allowed"
@@ -18,10 +17,10 @@ export default async function handler(req, res) {
     const {
       intent,
       contentType = "unknown",
-      fileName = ""
+      fileName = "",
+      imageData = ""
     } = req.body || {};
 
-    // 检查用户输入
     if (!intent || !intent.trim()) {
       return res.status(400).json({
         error: "请输入你希望封面呈现的感觉"
@@ -29,106 +28,217 @@ export default async function handler(req, res) {
     }
 
     /*
-      第一阶段：
-      AI 只分析用户想要的视觉方向。
+     * 图片模式：
+     * 前端把图片转换成 Base64 Data URL，
+     * 这里直接交给 Vision 模型分析。
+     */
 
-      现在还没有真正读取视频画面，
-      所以绝对不让 AI 假装自己已经看过视频。
-    */
+    const hasImage =
+      typeof imageData === "string" &&
+      imageData.startsWith("data:image/");
+
+    const systemPrompt = `
+You are Snips.
+
+Snips is an AI creative director specialized in high-click video covers.
+
+Your job is to look at the user's actual visual content,
+identify the strongest visual opportunities,
+and turn them into practical cover strategies.
+
+IMPORTANT:
+
+If an image is provided, you MUST actually analyze the image.
+
+Never invent objects, people, expressions, colors, composition,
+or visual details that are not visible in the image.
+
+The user's requested feeling is:
+
+${intent}
+
+Content type:
+
+${contentType}
+
+File name:
+
+${fileName || "未提供"}
+
+Your analysis has TWO layers.
+
+LAYER 1 — SNIPS
+
+Find exactly 5 visually meaningful "Snips".
+
+A Snip is NOT simply an object in the image.
+
+A Snip can be:
+
+- a face or expression
+- a body/action
+- a distinctive object
+- a strong visual detail
+- a contrast
+- a composition
+- negative space
+- a gaze direction
+- a color relationship
+- a visual tension
+- a moment that could become a strong cover
+
+Each Snip must explain WHY it matters for a clickable cover.
+
+LAYER 2 — COVER DIRECTIONS
+
+Create exactly 3 genuinely different cover directions.
+
+The three directions MUST use different creative mechanisms.
+
+Direction 1:
+Emotion / emotional impact
+
+Direction 2:
+Focus / visual dominance
+
+Direction 3:
+Curiosity / information gap
+
+Do NOT simply rewrite the same idea three times.
+
+Each direction must be actionable for a cover designer.
+
+Return JSON ONLY.
+
+Use exactly this structure:
+
+{
+  "snips": [
+    {
+      "label": "",
+      "reason": "",
+      "importance": 0
+    },
+    {
+      "label": "",
+      "reason": "",
+      "importance": 0
+    },
+    {
+      "label": "",
+      "reason": "",
+      "importance": 0
+    },
+    {
+      "label": "",
+      "reason": "",
+      "importance": 0
+    },
+    {
+      "label": "",
+      "reason": "",
+      "importance": 0
+    }
+  ],
+  "directions": [
+    {
+      "type": "EMOTION",
+      "name": "Emotion Burst",
+      "cn": "情绪爆发",
+      "why": "",
+      "visualDirection": "",
+      "subject": "",
+      "composition": "",
+      "mood": "",
+      "strategy": ""
+    },
+    {
+      "type": "FOCUS",
+      "name": "Extreme Focus",
+      "cn": "极致聚焦",
+      "why": "",
+      "visualDirection": "",
+      "subject": "",
+      "composition": "",
+      "mood": "",
+      "strategy": ""
+    },
+    {
+      "type": "CURIOSITY",
+      "name": "Curiosity Gap",
+      "cn": "好奇心缺口",
+      "why": "",
+      "visualDirection": "",
+      "subject": "",
+      "composition": "",
+      "mood": "",
+      "strategy": ""
+    }
+  ]
+}
+
+Rules:
+
+1. Answer in Chinese except the fixed English direction names.
+2. Be concise.
+3. Every Snip must be grounded in the actual image.
+4. Every Snip must be useful for cover creation.
+5. Do not invent unseen details.
+6. Do not use generic marketing language.
+7. Focus on visual hierarchy.
+8. Focus on clickability.
+9. Focus on subject recognition at small size.
+10. Focus on curiosity.
+11. The three directions must feel visibly different.
+12. importance must be a number between 0 and 1.
+`;
+
+    let inputContent = [
+      {
+        type: "input_text",
+        text: `
+请分析这张图片，并根据用户的要求生成 Snips 和三个封面方向。
+
+用户要求：
+
+${intent}
+        `
+      }
+    ];
+
+    /*
+     * 只有真正收到图片时才加入 image input。
+     */
+
+    if (hasImage) {
+
+      inputContent.push({
+        type: "input_image",
+        image_url: imageData
+      });
+
+    }
 
     const response = await client.responses.create({
 
       model: "gpt-5.6-luna",
 
       input: [
-
         {
           role: "system",
-
-          content: `
-You are Snips.
-
-Snips is an AI creative director for video covers.
-
-Your job is to transform the user's desired feeling into a strong,
-practical and visually actionable cover strategy.
-
-IMPORTANT:
-
-At this stage, you have NOT actually seen the user's video or images.
-
-Therefore:
-
-- Never pretend that you analyzed the actual video.
-- Never invent scenes, people, objects or emotions from the content.
-- Only analyze the user's requested creative direction.
-- Explain what kind of visual treatment should be used.
-- Think like a professional video-cover designer.
-
-Return JSON only.
-
-The JSON must contain exactly these fields:
-
-{
-  "visualDirection": "",
-  "subject": "",
-  "composition": "",
-  "mood": "",
-  "strategy": ""
-}
-
-Rules:
-
-1. Answer in Chinese.
-2. Keep each field concise.
-3. Avoid generic marketing language.
-4. Make every recommendation visually actionable.
-5. Focus on clickability.
-6. Focus on visual hierarchy.
-7. Focus on subject emphasis.
-8. Focus on curiosity.
-9. Do not invent information about the actual content.
-10. The result should feel like a professional creative direction,
-not an advertisement.
-
-Field meanings:
-
-visualDirection:
-The overall visual idea.
-
-subject:
-What should become the visual focus.
-
-composition:
-How the main subject and empty space should be arranged.
-
-mood:
-The emotional atmosphere.
-
-strategy:
-The core reason this direction may increase the desire to click.
-          `
+          content: [
+            {
+              type: "input_text",
+              text: systemPrompt
+            }
+          ]
         },
-
         {
           role: "user",
-
-          content: `
-用户希望封面呈现的感觉：
-
-${intent}
-
-内容类型：
-
-${contentType}
-
-内容名称：
-
-${fileName || "未提供"}
-          `
+          content: inputContent
         }
-
       ]
+
     });
 
     const text = response.output_text;
@@ -143,16 +253,28 @@ ${fileName || "未提供"}
 
       console.error(
         "JSON parse error:",
-        parseError
+        parseError,
+        text
       );
 
-      result = {
-        visualDirection: text,
-        subject: "",
-        composition: "",
-        mood: "",
-        strategy: ""
-      };
+      return res.status(500).json({
+        error: "AI 返回的数据格式异常"
+      });
+
+    }
+
+    /*
+     * 基础数据保护
+     */
+
+    if (
+      !Array.isArray(result.snips) ||
+      !Array.isArray(result.directions)
+    ) {
+
+      return res.status(500).json({
+        error: "AI 返回的数据结构不完整"
+      });
 
     }
 
@@ -166,11 +288,9 @@ ${fileName || "未提供"}
     );
 
     return res.status(500).json({
-
       error:
         error?.message ||
         "AI 调用失败，请检查 OpenAI API 配置"
-
     });
 
   }
