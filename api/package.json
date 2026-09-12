@@ -1,8 +1,9 @@
 {
-  "name": "snips",
-  "version": "1.0.0",
+  "name": "snips-api",
+  "version": "3.0.0",
   "type": "module",
   "dependencies": {
-    "openai": "^5.0.0"
+    "openai": "^5.0.0",
+    "sharp": "^0.33.0"
   }
 }
