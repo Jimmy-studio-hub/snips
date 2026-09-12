@@ -8,25 +8,13 @@
 |--------------------------------------------------------------------------
 */
 
-import OpenAI from "openai";
+import { createChatCompletion, extractContent } from "./deepseek-client.js";
 
 const CONFIG = {
   MODEL: process.env.SNIPS_MODEL || "deepseek-flash",
   MAX_RETRIES: 2,
   TIMEOUT: 45000,
 };
-
-let client = null;
-function getClient() {
-  if (!client) {
-    client = new OpenAI({
-      apiKey: process.env.DEEPSEEK_API_KEY || process.env.deepseek_flash,
-      baseURL: "https://api.deepseek.com",
-      timeout: CONFIG.TIMEOUT,
-    });
-  }
-  return client;
-}
 
 function extractJson(text) {
   if (!text) return null;
@@ -76,19 +64,19 @@ ${framesText}
 export async function understandContent(metadata = {}, frameDescriptions = []) {
   console.log("[ContentUnderstanding] 开始内容理解分析...");
 
-  const client = getClient();
   const messages = [{ role: "user", content: buildPrompt(metadata, frameDescriptions) }];
 
   let lastError = null;
   for (let attempt = 0; attempt <= CONFIG.MAX_RETRIES; attempt++) {
     try {
-      const response = await client.chat.completions.create({
+      const response = await createChatCompletion({
         model: CONFIG.MODEL,
         messages,
         temperature: 0.4,
         max_tokens: 1500,
+        timeout: CONFIG.TIMEOUT,
       });
-      const result = extractJson(response.choices[0]?.message?.content);
+      const result = extractJson(extractContent(response));
       if (result) {
         console.log("[ContentUnderstanding] 分析完成");
         return {
