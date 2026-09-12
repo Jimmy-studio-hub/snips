@@ -42,7 +42,7 @@ let client = null;
 function getClient() {
   if (!client) {
     client = new OpenAI({
-      apiKey: process.env.DEEPSEEK_API_KEY,
+      apiKey: process.env.DEEPSEEK_API_KEY || process.env.deepseek_flash,
       baseURL: "https://api.deepseek.com",
       timeout: CONFIG.TIMEOUT,
     });
