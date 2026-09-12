@@ -8,7 +8,7 @@
 |--------------------------------------------------------------------------
 */
 
-import OpenAI from "openai";
+import { createChatCompletion, extractContent } from "./deepseek-client.js";
 
 const CONFIG = {
   MODEL: process.env.SNIPS_MODEL || "deepseek-flash",
@@ -16,18 +16,6 @@ const CONFIG = {
   TIMEOUT: 60000,
   NUM_DIRECTIONS: 3,
 };
-
-let client = null;
-function getClient() {
-  if (!client) {
-    client = new OpenAI({
-      apiKey: process.env.DEEPSEEK_API_KEY || process.env.deepseek_flash,
-      baseURL: "https://api.deepseek.com",
-      timeout: CONFIG.TIMEOUT,
-    });
-  }
-  return client;
-}
 
 function extractJson(text) {
   if (!text) return null;
@@ -97,19 +85,19 @@ ${snipsText}
 export async function generateStrategies(contentUnderstanding, topSnips, userIntent) {
   console.log("[CreativeStrategy] 开始生成创意方向...");
 
-  const client = getClient();
   const messages = [{ role: "user", content: buildPrompt(contentUnderstanding, topSnips, userIntent) }];
 
   let lastError = null;
   for (let attempt = 0; attempt <= CONFIG.MAX_RETRIES; attempt++) {
     try {
-      const response = await client.chat.completions.create({
+      const response = await createChatCompletion({
         model: CONFIG.MODEL,
         messages,
         temperature: 0.7,
         max_tokens: 2500,
+        timeout: CONFIG.TIMEOUT,
       });
-      const result = extractJson(response.choices[0]?.message?.content);
+      const result = extractJson(extractContent(response));
       if (result && Array.isArray(result.directions) && result.directions.length > 0) {
         console.log(`[CreativeStrategy] 生成 ${result.directions.length} 个创意方向`);
         return {
