@@ -1,7 +1,8 @@
 import OpenAI from "openai";
 
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.DEEPSEEK_API_KEY,
+  baseURL: "https://api.deepseek.com"
 });
 
 /*
@@ -10,13 +11,18 @@ const client = new OpenAI({
 |--------------------------------------------------------------------------
 */
 
-const MODEL = "gpt-5.6-luna";
+// DeepSeek-V4.1-Flash
+// 官方 API 模型名：deepseek-flash
+const MODEL =
+  process.env.SNIPS_MODEL ||
+  "deepseek-flash";
 
 const MAX_IMAGES = 5;
 
 // 单次请求图片 Base64 总大小限制
 // Vercel Function 本身还有请求体限制，因此这里提前保护。
-const MAX_TOTAL_IMAGE_SIZE = 3.5 * 1024 * 1024;
+const MAX_TOTAL_IMAGE_SIZE =
+  3.5 * 1024 * 1024;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,18 +33,27 @@ const MAX_TOTAL_IMAGE_SIZE = 3.5 * 1024 * 1024;
 function isValidImageDataUrl(value) {
   return (
     typeof value === "string" &&
-    /^data:image\/(jpeg|jpg|png|webp|gif);base64,/i.test(value)
+    /^data:image\/(jpeg|jpg|png|webp|gif);base64,/i.test(
+      value
+    )
   );
 }
 
-function clampNumber(value, min = 0, max = 1) {
+function clampNumber(
+  value,
+  min = 0,
+  max = 1
+) {
   const number = Number(value);
 
   if (!Number.isFinite(number)) {
     return min;
   }
 
-  return Math.max(min, Math.min(max, number));
+  return Math.max(
+    min,
+    Math.min(max, number)
+  );
 }
 
 function cleanString(value) {
@@ -92,16 +107,28 @@ function extractJson(text) {
    * 从第一个 { 到最后一个 }
    */
 
-  const start = cleaned.indexOf("{");
-  const end = cleaned.lastIndexOf("}");
+  const start =
+    cleaned.indexOf("{");
 
-  if (start !== -1 && end !== -1 && end > start) {
+  const end =
+    cleaned.lastIndexOf("}");
+
+  if (
+    start !== -1 &&
+    end !== -1 &&
+    end > start
+  ) {
 
     const possibleJson =
-      cleaned.slice(start, end + 1);
+      cleaned.slice(
+        start,
+        end + 1
+      );
 
     try {
-      return JSON.parse(possibleJson);
+      return JSON.parse(
+        possibleJson
+      );
     } catch {}
   }
 
@@ -133,11 +160,15 @@ function normalizeSnips(snips) {
           index + 1,
 
         label:
-          cleanString(snip?.label) ||
+          cleanString(
+            snip?.label
+          ) ||
           `Snip ${index + 1}`,
 
         reason:
-          cleanString(snip?.reason),
+          cleanString(
+            snip?.reason
+          ),
 
         importance:
           clampNumber(
@@ -154,10 +185,12 @@ function normalizeSnips(snips) {
         b.importance -
         a.importance
     )
-    .map((snip, index) => ({
-      ...snip,
-      rank: index + 1
-    }));
+    .map(
+      (snip, index) => ({
+        ...snip,
+        rank: index + 1
+      })
+    );
 }
 
 /*
@@ -166,7 +199,9 @@ function normalizeSnips(snips) {
 |--------------------------------------------------------------------------
 */
 
-function normalizeDirections(directions) {
+function normalizeDirections(
+  directions
+) {
 
   if (!Array.isArray(directions)) {
     return [];
@@ -180,79 +215,91 @@ function normalizeDirections(directions) {
 
   return directions
     .slice(0, 3)
-    .map((direction, index) => {
+    .map(
+      (direction, index) => {
 
-      const fallbackTypes = [
-        "EMOTION",
-        "FOCUS",
-        "CURIOSITY"
-      ];
+        const fallbackTypes = [
+          "EMOTION",
+          "FOCUS",
+          "CURIOSITY"
+        ];
 
-      const type =
-        allowedTypes.includes(
-          direction?.type
-        )
-          ? direction.type
-          : fallbackTypes[index];
-
-      const names = {
-        EMOTION: "Emotion Burst",
-        FOCUS: "Extreme Focus",
-        CURIOSITY: "Curiosity Gap"
-      };
-
-      const chineseNames = {
-        EMOTION: "情绪爆发",
-        FOCUS: "极致聚焦",
-        CURIOSITY: "好奇心缺口"
-      };
-
-      return {
-
-        id:
-          `direction-${index + 1}`,
-
-        type,
-
-        name:
-          names[type],
-
-        cn:
-          chineseNames[type],
-
-        why:
-          cleanString(
-            direction?.why
-          ),
-
-        visualDirection:
-          cleanString(
-            direction?.visualDirection
-          ),
-
-        subject:
-          cleanString(
-            direction?.subject
-          ),
-
-        composition:
-          cleanString(
-            direction?.composition
-          ),
-
-        mood:
-          cleanString(
-            direction?.mood
-          ),
-
-        strategy:
-          cleanString(
-            direction?.strategy
+        const type =
+          allowedTypes.includes(
+            direction?.type
           )
+            ? direction.type
+            : fallbackTypes[index];
 
-      };
+        const names = {
+          EMOTION:
+            "Emotion Burst",
 
-    });
+          FOCUS:
+            "Extreme Focus",
+
+          CURIOSITY:
+            "Curiosity Gap"
+        };
+
+        const chineseNames = {
+          EMOTION:
+            "情绪爆发",
+
+          FOCUS:
+            "极致聚焦",
+
+          CURIOSITY:
+            "好奇心缺口"
+        };
+
+        return {
+
+          id:
+            `direction-${index + 1}`,
+
+          type,
+
+          name:
+            names[type],
+
+          cn:
+            chineseNames[type],
+
+          why:
+            cleanString(
+              direction?.why
+            ),
+
+          visualDirection:
+            cleanString(
+              direction?.visualDirection
+            ),
+
+          subject:
+            cleanString(
+              direction?.subject
+            ),
+
+          composition:
+            cleanString(
+              direction?.composition
+            ),
+
+          mood:
+            cleanString(
+              direction?.mood
+            ),
+
+          strategy:
+            cleanString(
+              direction?.strategy
+            )
+
+        };
+
+      }
+    );
 }
 
 /*
@@ -637,9 +684,13 @@ Before returning JSON, verify:
 |--------------------------------------------------------------------------
 */
 
-export default async function handler(req, res) {
+export default async function handler(
+  req,
+  res
+) {
 
-  const startTime = Date.now();
+  const startTime =
+    Date.now();
 
   console.log(
     "[Snips] =================================="
@@ -697,7 +748,9 @@ export default async function handler(req, res) {
      */
 
     if (
-      Array.isArray(body.images)
+      Array.isArray(
+        body.images
+      )
     ) {
 
       images =
@@ -822,6 +875,9 @@ export default async function handler(req, res) {
 
     /*
      * User content
+     *
+     * DeepSeek V4.1-Flash
+     * 原生多模态输入。
      */
 
     const userContent = [
@@ -866,18 +922,26 @@ Do not invent visual information.
 
         type: "input_image",
 
-        image_url: image
+        image_url: image,
+
+        detail: "high"
 
       });
 
     }
 
     console.log(
-      "[Snips] Calling OpenAI..."
+      "[Snips] Calling DeepSeek V4.1-Flash..."
     );
 
     /*
-     * OpenAI
+     * DeepSeek V4.1-Flash
+     *
+     * 官方模型调用名：
+     * deepseek-flash
+     *
+     * 使用 DeepSeek
+     * OpenAI-compatible Responses API。
      */
 
     const response =
@@ -906,7 +970,8 @@ Do not invent visual information.
           {
             role: "user",
 
-            content: userContent
+            content:
+              userContent
 
           }
 
@@ -928,7 +993,7 @@ Do not invent visual information.
         : "";
 
     console.log(
-      "[Snips] OpenAI response received"
+      "[Snips] DeepSeek response received"
     );
 
     console.log(
@@ -976,7 +1041,10 @@ Do not invent visual information.
           "AI 返回的数据格式异常",
 
         raw:
-          text.slice(0, 5000)
+          text.slice(
+            0,
+            5000
+          )
 
       });
 
@@ -1062,8 +1130,12 @@ Do not invent visual information.
 
     directions.sort(
       (a, b) =>
-        directionOrder.indexOf(a.type) -
-        directionOrder.indexOf(b.type)
+        directionOrder.indexOf(
+          a.type
+        ) -
+        directionOrder.indexOf(
+          b.type
+        )
     );
 
     /*
@@ -1096,6 +1168,11 @@ Do not invent visual information.
     );
 
     console.log(
+      "[Snips] Model:",
+      MODEL
+    );
+
+    console.log(
       "[Snips] Snips:",
       snips.length
     );
@@ -1114,7 +1191,9 @@ Do not invent visual information.
       "[Snips] =================================="
     );
 
-    return res.status(200).json(result);
+    return res.status(200).json(
+      result
+    );
 
   } catch (error) {
 
@@ -1154,7 +1233,7 @@ Do not invent visual information.
     );
 
     /*
-     * OpenAI error
+     * DeepSeek error
      */
 
     const status =
@@ -1166,7 +1245,7 @@ Do not invent visual information.
 
     let message =
       error?.message ||
-      "AI 调用失败";
+      "DeepSeek AI 调用失败";
 
     /*
      * Friendly messages
@@ -1175,28 +1254,42 @@ Do not invent visual information.
     if (status === 401) {
 
       message =
-        "OpenAI API Key 无效或未正确配置";
+        "DeepSeek API Key 无效或未正确配置";
+
+    }
+
+    if (status === 402) {
+
+      message =
+        "DeepSeek API 余额不足，请充值后重试";
 
     }
 
     if (status === 403) {
 
       message =
-        "OpenAI API 没有访问权限";
+        "DeepSeek API 没有访问权限";
 
     }
 
     if (status === 404) {
 
       message =
-        "OpenAI 模型不存在或当前项目没有访问权限";
+        "DeepSeek 模型不存在或当前项目没有访问权限";
+
+    }
+
+    if (status === 408) {
+
+      message =
+        "DeepSeek 请求超时，请稍后重试";
 
     }
 
     if (status === 429) {
 
       message =
-        "OpenAI API 当前达到额度或请求限制，请稍后再试";
+        "DeepSeek API 当前达到请求限制，请稍后再试";
 
     }
 
