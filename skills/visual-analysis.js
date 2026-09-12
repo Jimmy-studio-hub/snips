@@ -10,7 +10,7 @@
 |--------------------------------------------------------------------------
 */
 
-import OpenAI from "openai";
+import { createChatCompletion, extractContent } from "./deepseek-client.js";
 
 /*
 |--------------------------------------------------------------------------
@@ -34,25 +34,6 @@ const CONFIG = {
   // 请求超时（毫秒）
   TIMEOUT: 60000,
 };
-
-/*
-|--------------------------------------------------------------------------
-| 初始化客户端
-|--------------------------------------------------------------------------
-*/
-
-let client = null;
-
-function getClient() {
-  if (!client) {
-    client = new OpenAI({
-      apiKey: process.env.DEEPSEEK_API_KEY || process.env.deepseek_flash,
-      baseURL: "https://api.deepseek.com",
-      timeout: CONFIG.TIMEOUT,
-    });
-  }
-  return client;
-}
 
 /*
 |--------------------------------------------------------------------------
@@ -175,8 +156,6 @@ ${context.intent ? `用户的创意方向是："${context.intent}"，请结合�
 */
 
 async function analyzeBatch(frames, context = {}) {
-  const client = getClient();
-
   // 压缩图片
   const compressedFrames = [];
   let totalSize = 0;
@@ -218,14 +197,15 @@ async function analyzeBatch(frames, context = {}) {
     try {
       console.log(`[VisualAnalysis] 发送批次 ${frames.length} 帧，尝试 ${attempt + 1}/${CONFIG.MAX_RETRIES + 1}`);
 
-      const response = await client.chat.completions.create({
+      const response = await createChatCompletion({
         model: CONFIG.MODEL,
         messages,
         temperature: 0.3,
         max_tokens: 2000,
+        timeout: CONFIG.TIMEOUT,
       });
 
-      const content = response.choices[0]?.message?.content;
+      const content = extractContent(response);
       const result = extractJson(content);
 
       if (result && Array.isArray(result.frames)) {
