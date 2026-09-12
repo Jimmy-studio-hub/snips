@@ -15,7 +15,7 @@
 |--------------------------------------------------------------------------
 */
 
-import OpenAI from "openai";
+import { createChatCompletion, extractContent } from "./deepseek-client.js";
 
 /*
 |--------------------------------------------------------------------------
@@ -30,25 +30,6 @@ const CONFIG = {
   MAX_RETRIES: 2,
   TIMEOUT: 60000,
 };
-
-/*
-|--------------------------------------------------------------------------
-| 客户端
-|--------------------------------------------------------------------------
-*/
-
-let client = null;
-
-function getClient() {
-  if (!client) {
-    client = new OpenAI({
-      apiKey: process.env.DEEPSEEK_API_KEY || process.env.deepseek_flash,
-      baseURL: "https://api.deepseek.com",
-      timeout: CONFIG.TIMEOUT,
-    });
-  }
-  return client;
-}
 
 /*
 |--------------------------------------------------------------------------
@@ -156,8 +137,6 @@ ${context.platform ? `目标平台：${context.platform}` : ""}
 */
 
 async function analyzeBatch(snips, context = {}) {
-  const client = getClient();
-
   const compressed = [];
   let totalSize = 0;
   for (const snip of snips) {
@@ -186,13 +165,14 @@ async function analyzeBatch(snips, context = {}) {
   let lastError = null;
   for (let attempt = 0; attempt <= CONFIG.MAX_RETRIES; attempt++) {
     try {
-      const response = await client.chat.completions.create({
+      const response = await createChatCompletion({
         model: CONFIG.MODEL,
         messages,
         temperature: 0.3,
         max_tokens: 2000,
+        timeout: CONFIG.TIMEOUT,
       });
-      const result = extractJson(response.choices[0]?.message?.content);
+      const result = extractJson(extractContent(response));
       if (result && Array.isArray(result.frames)) return result.frames;
       lastError = new Error("无法解析JSON");
     } catch (error) {
