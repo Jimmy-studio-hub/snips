@@ -1,8 +1,13 @@
 {
   "name": "snips",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "type": "module",
+  "description": "Snips V3 Engine - AI Cover Studio with video frame extraction, frame selection, visual analysis, clickability scoring, and creative strategy",
   "dependencies": {
-    "openai": "^5.0.0"
+    "openai": "^5.0.0",
+    "sharp": "^0.33.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
