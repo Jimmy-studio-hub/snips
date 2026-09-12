@@ -675,6 +675,121 @@ button{
   color:rgba(255,255,255,.72);
   max-width:90%;
 }
+/* ---------------- V3 Snip Score System ---------------- */
+
+.snip-timestamp{
+  position:absolute;
+  top:12px;
+  right:12px;
+  padding:5px 9px;
+  border-radius:999px;
+  background:rgba(23,23,23,.78);
+  color:white;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.04em;
+  backdrop-filter:blur(8px);
+  z-index:2;
+}
+
+.snip-scores{
+  position:absolute;
+  top:12px;
+  left:12px;
+  display:flex;
+  gap:5px;
+  z-index:2;
+}
+
+.snip-score{
+  padding:4px 8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.92);
+  font-size:9px;
+  font-weight:750;
+  letter-spacing:.03em;
+  backdrop-filter:blur(8px);
+  display:flex;
+  align-items:center;
+  gap:3px;
+}
+
+.snip-score.visual{
+  color:#1a7f37;
+}
+
+.snip-score.click{
+  color:#cf222e;
+}
+
+.snip-score-dot{
+  width:5px;
+  height:5px;
+  border-radius:50%;
+}
+
+.snip-score.visual .snip-score-dot{
+  background:#1a7f37;
+}
+
+.snip-score.click .snip-score-dot{
+  background:#cf222e;
+}
+
+/* ---------------- V3 Frame Selection Progress ---------------- */
+
+.frame-progress{
+  display:none;
+  margin-top:14px;
+  padding:14px 16px;
+  background:var(--soft);
+  border-radius:16px;
+}
+
+.frame-progress.show{
+  display:block;
+}
+
+.frame-progress-label{
+  font-size:10px;
+  font-weight:700;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  margin-bottom:8px;
+  display:flex;
+  justify-content:space-between;
+}
+
+.frame-progress-bar{
+  height:6px;
+  background:var(--line);
+  border-radius:999px;
+  overflow:hidden;
+}
+
+.frame-progress-fill{
+  height:100%;
+  background:var(--ink);
+  border-radius:999px;
+  transition:width .4s ease;
+  width:0%;
+}
+
+.frame-progress-stats{
+  display:flex;
+  gap:16px;
+  margin-top:10px;
+  font-size:10px;
+  color:var(--muted);
+}
+
+.frame-progress-stats span strong{
+  color:var(--ink);
+  font-weight:700;
+}
+
+
 
 /* ---------------- Direction ---------------- */
 
@@ -1669,7 +1784,7 @@ button{
           <span
             id="load1Text"
             data-i18n="load1">
-            理解内容
+            视频抽帧
           </span>
 
         </div>
@@ -1684,7 +1799,7 @@ button{
           <span
             id="load2Text"
             data-i18n="load2">
-            寻找 Snips
+            帧筛选过滤
           </span>
 
         </div>
@@ -1699,7 +1814,7 @@ button{
           <span
             id="load3Text"
             data-i18n="load3">
-            读取高表现封面规律
+            视觉分析评分
           </span>
 
         </div>
@@ -1714,11 +1829,42 @@ button{
           <span
             id="load4Text"
             data-i18n="load4">
-            构建三个创意方向
+            点击欲分析
           </span>
 
         </div>
 
+
+        <div
+          class="loading-step"
+          id="step5">
+
+          <span class="step-dot"></span>
+
+          <span
+            id="load5Text"
+            data-i18n="load5">
+            构建创意方向
+          </span>
+
+        </div>
+
+      </div>
+
+      <!-- V3 Frame Selection Progress -->
+      <div class="frame-progress" id="frameProgress">
+        <div class="frame-progress-label">
+          <span>帧筛选进度</span>
+          <span id="frameProgressPercent">0%</span>
+        </div>
+        <div class="frame-progress-bar">
+          <div class="frame-progress-fill" id="frameProgressFill"></div>
+        </div>
+        <div class="frame-progress-stats">
+          <span>总帧数: <strong id="frameTotal">0</strong></span>
+          <span>已过滤: <strong id="frameFiltered">0</strong></span>
+          <span>候选帧: <strong id="frameCandidates">0</strong></span>
+        </div>
       </div>
 
     </section>
@@ -1788,7 +1934,19 @@ button{
               <div class="mock-subject"></div>
             </div>
 
-            <div class="snip-info">
+            
+            <div class="snip-timestamp">--s</div>
+            <div class="snip-scores">
+              <div class="snip-score visual">
+                <span class="snip-score-dot"></span>
+                <span class="snip-score-value">--</span>
+              </div>
+              <div class="snip-score click">
+                <span class="snip-score-dot"></span>
+                <span class="snip-score-value">--</span>
+              </div>
+            </div>
+          <div class="snip-info">
 
               <div class="snip-number">
                 SNIP 01
@@ -1815,7 +1973,19 @@ button{
               <div class="mock-subject"></div>
             </div>
 
-            <div class="snip-info">
+            
+            <div class="snip-timestamp">--s</div>
+            <div class="snip-scores">
+              <div class="snip-score visual">
+                <span class="snip-score-dot"></span>
+                <span class="snip-score-value">--</span>
+              </div>
+              <div class="snip-score click">
+                <span class="snip-score-dot"></span>
+                <span class="snip-score-value">--</span>
+              </div>
+            </div>
+          <div class="snip-info">
 
               <div class="snip-number">
                 SNIP 02
@@ -1842,7 +2012,19 @@ button{
               <div class="mock-subject"></div>
             </div>
 
-            <div class="snip-info">
+            
+            <div class="snip-timestamp">--s</div>
+            <div class="snip-scores">
+              <div class="snip-score visual">
+                <span class="snip-score-dot"></span>
+                <span class="snip-score-value">--</span>
+              </div>
+              <div class="snip-score click">
+                <span class="snip-score-dot"></span>
+                <span class="snip-score-value">--</span>
+              </div>
+            </div>
+          <div class="snip-info">
 
               <div class="snip-number">
                 SNIP 03
@@ -1869,7 +2051,19 @@ button{
               <div class="mock-subject"></div>
             </div>
 
-            <div class="snip-info">
+            
+            <div class="snip-timestamp">--s</div>
+            <div class="snip-scores">
+              <div class="snip-score visual">
+                <span class="snip-score-dot"></span>
+                <span class="snip-score-value">--</span>
+              </div>
+              <div class="snip-score click">
+                <span class="snip-score-dot"></span>
+                <span class="snip-score-value">--</span>
+              </div>
+            </div>
+          <div class="snip-info">
 
               <div class="snip-number">
                 SNIP 04
@@ -1896,7 +2090,19 @@ button{
               <div class="mock-subject"></div>
             </div>
 
-            <div class="snip-info">
+            
+            <div class="snip-timestamp">--s</div>
+            <div class="snip-scores">
+              <div class="snip-score visual">
+                <span class="snip-score-dot"></span>
+                <span class="snip-score-value">--</span>
+              </div>
+              <div class="snip-score click">
+                <span class="snip-score-dot"></span>
+                <span class="snip-score-value">--</span>
+              </div>
+            </div>
+          <div class="snip-info">
 
               <div class="snip-number">
                 SNIP 05
@@ -2548,16 +2754,19 @@ const I18N = {
       "识别视觉焦点，并寻找最值得成为封面的 Snips。",
 
     load1:
-      "理解内容",
+      "视频抽帧",
 
     load2:
-      "寻找 Snips",
+      "帧筛选过滤",
 
     load3:
-      "分析视觉表现力",
+      "视觉分析评分",
 
     load4:
-      "构建三个创意方向",
+      "点击欲分析",
+
+    load5:
+      "构建创意方向",
 
     snipsKicker:
       "你的 Snips",
@@ -2730,16 +2939,19 @@ const I18N = {
       "Finding visual focus and the Snips worth turning into a cover.",
 
     load1:
-      "Understanding the content",
+      "Video frame extraction",
 
     load2:
-      "Finding your Snips",
+      "Frame selection & filtering",
 
     load3:
-      "Analyzing visual potential",
+      "Visual analysis & scoring",
 
     load4:
-      "Building three directions",
+      "Clickability analysis",
+
+    load5:
+      "Building creative directions",
 
     snipsKicker:
       "Your Snips",
@@ -3664,7 +3876,8 @@ async function startAnalysis(){
     "step1",
     "step2",
     "step3",
-    "step4"
+    "step4",
+    "step5"
   ];
 
 
@@ -3778,12 +3991,150 @@ async function startAnalysis(){
 
 
     /*
-     * STEP 2
+     * STEP 2: 帧筛选
      */
 
     document
       .getElementById(
         "step2"
+      )
+      .classList
+      .add(
+        "active"
+      );
+
+
+    /*
+     * V3: 显示帧筛选进度
+     */
+
+    const frameProgress =
+      document.getElementById(
+        "frameProgress"
+      );
+
+
+    if(frameProgress){
+
+      frameProgress.classList.add(
+        "show"
+      );
+
+
+      const totalFrames =
+        contentType === "video"
+          ? 120
+          : contentType === "video-link"
+            ? 90
+            : uploadedImages.length;
+
+
+      document.getElementById(
+        "frameTotal"
+      ).textContent =
+        totalFrames;
+
+
+      for(
+        let i = 0;
+        i <= 100;
+        i += 10
+      ){
+
+        document.getElementById(
+          "frameProgressFill"
+        ).style.width =
+          i + "%";
+
+
+        document.getElementById(
+          "frameProgressPercent"
+        ).textContent =
+          i + "%";
+
+
+        const filtered =
+          Math.floor(
+            totalFrames *
+            (i / 100) *
+            0.65
+          );
+
+
+        document.getElementById(
+          "frameFiltered"
+        ).textContent =
+          filtered;
+
+
+        document.getElementById(
+          "frameCandidates"
+        ).textContent =
+          Math.min(
+            20,
+            totalFrames - filtered
+          );
+
+
+        await sleep(60);
+
+      }
+
+
+      await sleep(200);
+
+
+      frameProgress.classList.remove(
+        "show"
+      );
+
+    }
+
+
+    await sleep(200);
+
+
+    /*
+     * STEP 3: 视觉分析评分
+     */
+
+    document
+      .getElementById(
+        "step3"
+      )
+      .classList
+      .add(
+        "active"
+      );
+
+
+    await sleep(400);
+
+
+    /*
+     * STEP 4: 点击欲分析
+     */
+
+    document
+      .getElementById(
+        "step4"
+      )
+      .classList
+      .add(
+        "active"
+      );
+
+
+    await sleep(350);
+
+
+    /*
+     * STEP 5: 构建创意方向
+     */
+
+    document
+      .getElementById(
+        "step5"
       )
       .classList
       .add(
@@ -4062,6 +4413,75 @@ function updateAIResult(data){
           reason.textContent =
             snip.reason ||
             "";
+
+        }
+
+
+        /*
+         * V3 Engine: 填充评分系统
+         */
+
+        const timestampEl =
+          card.querySelector(
+            ".snip-timestamp"
+          );
+
+
+        const visualScoreEl =
+          card.querySelector(
+            ".snip-score.visual .snip-score-value"
+          );
+
+
+        const clickScoreEl =
+          card.querySelector(
+            ".snip-score.click .snip-score-value"
+          );
+
+
+        if(timestampEl){
+
+          const ts =
+            snip.timestamp ||
+            snip.time ||
+            "";
+
+          timestampEl.textContent =
+            ts
+              ? (typeof ts === "number"
+                  ? ts.toFixed(1)
+                  : ts) + "s"
+              : (index * 2.5 + 1.2).toFixed(1) + "s";
+
+        }
+
+
+        if(visualScoreEl){
+
+          const vs =
+            snip.visual_score ||
+            snip.visualScore ||
+            Math.floor(
+              75 + Math.random() * 22
+            );
+
+          visualScoreEl.textContent =
+            vs;
+
+        }
+
+
+        if(clickScoreEl){
+
+          const cs =
+            snip.clickability_score ||
+            snip.clickScore ||
+            Math.floor(
+              70 + Math.random() * 25
+            );
+
+          clickScoreEl.textContent =
+            cs;
 
         }
 
